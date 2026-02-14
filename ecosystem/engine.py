@@ -1,3 +1,5 @@
+import numpy as np
+
 # first sketch of design to make concepts clear
 
 
