@@ -12,17 +12,17 @@ v / L = reserve turnover/conductance rate, 1/day
 
 '''
 
-### guards
-V_min = 1e-6  # cm^3, numerical floor
+# ### guards
+# V_min = 1e-6  # cm^3, numerical floor
 
-### species-level parameters
+# ### species-level parameters
 
-v = 0.02737  # cm/day, reserve turnover/conductance rate
-#p_Am = 1500  # J/day/cm^2, maximum assimilation rate per
-p_M = 2511  # J/day/cm^3, maintenance cost per structural volume
-E_G = 7853  # J/cm^3, approximate derived Ovis value for energy density of structural volume
-kappa = 0.7978  # allocation fraction to soma
-k_J = 0.002  # 1/day, maturity maintenance rate coefficient
+# v = 0.02737  # cm/day, reserve turnover/conductance rate
+# #p_Am = 1500  # J/day/cm^2, maximum assimilation rate per
+# p_M = 2511  # J/day/cm^3, maintenance cost per structural volume
+# E_G = 7853  # J/cm^3, approximate derived Ovis value for energy density of structural volume
+# kappa = 0.7978  # allocation fraction to soma
+# k_J = 0.002  # 1/day, maturity maintenance rate coefficient
 
 
 

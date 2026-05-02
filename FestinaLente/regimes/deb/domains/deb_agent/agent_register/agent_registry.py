@@ -49,3 +49,24 @@ class AgentRegistryEntry:
 
 
 '''
+
+
+@dataclass(frozen=True)
+class PhysiologySpec:
+    # mobilization / allocation
+    v: float              # cm / day
+    kappa: float          # soma allocation
+    kappa_R: float        # reproduction efficiency
+
+    # soma
+    p_M: float            # J / day / cm^3
+    E_G: float            # J / cm^3
+
+    # maturity
+    k_J: float            # 1 / day
+    E_Hb: float           # J
+    E_Hx: float           # J
+    E_Hp: float           # J
+
+    # numerical guard
+    V_min: float = 1e-6

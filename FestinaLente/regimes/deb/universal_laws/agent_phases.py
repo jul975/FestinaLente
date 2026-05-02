@@ -5,6 +5,7 @@ from turtle import position
 @dataclass(frozen=True)
 class MobilizationResult:
     mobilized_energy_J: float
+    
 
 
 @dataclass

@@ -16,6 +16,12 @@ from FestinaLente.regimes.deb.universal_laws.agent_phases import (
     maturity_reproduction_phase,
 )
 
+
+MOVEMENT : int = 1
+REPRODUCTION : int = 2
+ENERGY : int = 3
+
+
 """
 NOTE: 
     on engine, only use hash, to interact with agent collection
@@ -102,14 +108,16 @@ class PreMovementResult:
     movement_cost_j: float
 
 
+
+
 class DEBAgent:
     def __init__(
         self, agent_setup: AgentSetup, initial_state: EnergyState, params: EnergyParams
     ):
 
         self._init_rngs(agent_setup)
-        self.state = initial_state
-        self.params = params
+        self.state: EnergyState = initial_state
+        self.params: EnergyParams = params
 
     def _init_rngs(self, agent_setup: AgentSetup) -> None:
         """initializes agent lineage."""
@@ -125,56 +133,7 @@ class DEBAgent:
         )
 
         return
+    
 
-    def early_tick_energy_update(self, dt: float):
-        """
-        update pre-movement energy steps, e.g. mobilization, branch split, maintenance, movement cost deduction, etc.
-        """
-        # 0. add assimilation energy to reserve (not implemented yet, so assume constant reserve for now)
-
-        # 1. Mobilization phase
-        mobilized_energy = mobilization_phase(self.state, self.params, dt)
-
-        # 2. Branch split phase
-        branch_budget = branch_split_phase(mobilized_energy, self.params)
-
-        # 3. Maintenance phase
-        maintenance_result = maintenance_phase(
-            self.state, self.params, dt, branch_budget
-        )
-
-        return
-
-    def move_agent(self, dt: float):
-        """movement phase, which deducts movement cost from soma budget, and returns movement result for use in growth phase."""
-        movement_result = movement_phase(
-            self, branch_budget.soma_budget_J, self.params, dt
-        )
-        return movement_result
-
-    def step(self, dt: float):
-
-        self.early_tick_energy_update(dt)
-
-        # 4. Movement phase (placeholder)
-        movement_result = movement_phase(
-            self, branch_budget.soma_budget_J, self.params, dt
-        )
-
-        # 5. Growth phase
-        growth_result = growth_phase(
-            self.state,
-            branch_budget.soma_budget_J - movement_result.movement_cost_J,
-            self.params,
-            dt,
-        )
-
-        # 6. Maturity/Reproduction phase
-        maturity_result = maturity_reproduction_phase(
-            self.state, branch_budget.maturity_repro_budget_J, self.params
-        )
-
-        # 7. Harvest
-
-        # 8. Update state variables, e.g. age, offspring count, etc.
-        self.state += dt
+    def update_agent_state(): 
+        pass

@@ -101,3 +101,45 @@ class OvisDEBParams:
     E_Hpm: float = 1.814e8       # J, male puberty
 
     f: float = 1.0
+
+
+@dataclass(frozen=True)
+class OvisRawParams:
+    # temperature
+    T_ref: float
+    T_A: float
+
+    # feeding / conversion
+    F_m: float
+    kap_X: float
+    kap_P: float
+    f: float
+    f_tW: float
+
+    # reserve / allocation
+    v: float
+    kap: float
+    kap_R: float
+
+    # maintenance / growth
+    p_M: float
+    p_T: float
+    E_G: float
+
+    # maturity
+    k_J: float
+    E_Hb: float
+    E_Hx: float
+    E_Hp: float
+    E_Hpm: float
+
+    # aging
+    h_a: float
+    s_G: float
+
+    # morphology / sex
+    z: float
+    z_m: float
+    del_M: float
+    sF: float
+    t_0: float
