@@ -6,10 +6,11 @@
 
 from dataclasses import dataclass
 
+from FestinaLente.regimes.deb.domains.deb_agent.agent_register.agent_logic import daily_somatic_maintenance_J, somatic_maintenance_J
 from FestinaLente.regimes.deb.universal_laws.agent_phases import BranchBudget, MaintenanceResult, MobilizationResult, begin_day_energy_phase, branch_split_phase, maintenance_phase
 
 
-def early_day_energy_update(state, params, dt: float):
+def early_day_energy_update(state, params, dt: float) -> None:
     """
     update pre-movement energy steps, e.g. mobilization, branch split, maintenance, movement cost deduction, etc.
     """
@@ -46,7 +47,6 @@ def end_of_day_state_update(self):
 
 def step(self, dt: float):
 
-    self.early_tick_energy_update(dt)
 
     # 4. Movement phase (placeholder)
     movement_result = movement_phase(
@@ -108,11 +108,23 @@ class PhysiologySpec:
     V_min: float = 1e-6 
 
 @dataclass
+class StructureParams:
+    """ mid transition computed values:
+     - C_S: somatic maint cost per day """
+    C_S: float      # J / day / cm^3
+
+    E_G: float      # J / cm^3
+    p_T: float = 0  # optional, ignored for now
+
+@dataclass
 class DailyStateParams:
     """Contains all computed values and derivations for the rest of the day"""
+
     pass
 
 
+def get_movement_cost():
+    pass
 
 
 def morning_energy_compute(agent_state : DEBAgentState, physiology_spec : PhysiologySpec) -> DailyStateParams:
@@ -139,4 +151,11 @@ def morning_energy_compute(agent_state : DEBAgentState, physiology_spec : Physio
     p_C: float = mobilize_power_deb_lite(agent_state=agent_state, params=physiology_spec)
     # correct for time step
     # return p_C in J/day, but we will use it for a dt time step, so multiply by dt to get energy available for this time step
+    C_S = daily_somatic_maintenance_J(agent_state, physiology_spec)
+    B_S = p_C * physiology_spec.kappa
+    B_M = p_C * (1-physiology_spec.kappa)
+
+    movement_budget = B_S - C_S
+
+    movement_cost: float = get_movement_cost()
     return p_C #* dt

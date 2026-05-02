@@ -3,18 +3,6 @@ from dataclasses import dataclass
 import numpy as np
 
 from FestinaLente.core.contracts.step_results import AgentSetup
-from FestinaLente.regimes.deb.universal_laws.agent_phases import (
-    EnergyState,
-    EnergyParams,
-)
-from FestinaLente.regimes.deb.universal_laws.agent_phases import (
-    mobilization_phase,
-    branch_split_phase,
-    maintenance_phase,
-    movement_phase,
-    growth_phase,
-    maturity_reproduction_phase,
-)
 
 
 MOVEMENT : int = 1
@@ -78,7 +66,6 @@ class PhysiologySpec:
 class DerivedPhysiologySpec:
     """derived parameters for convenience, to avoid repeated calculations."""
 
-    cPar = parscomp_st(par)
     E_Rb: float  # reproduction buffer at birth, J
     E_Rp: float  # reproduction buffer at puberty, J
 
@@ -112,12 +99,12 @@ class PreMovementResult:
 
 class DEBAgent:
     def __init__(
-        self, agent_setup: AgentSetup, initial_state: EnergyState, params: EnergyParams
+        self, agent_setup: AgentSetup, initial_state: TaxonAnchor, physiology_params: PhysiologySpec 
     ):
 
         self._init_rngs(agent_setup)
-        self.state: EnergyState = initial_state
-        self.params: EnergyParams = params
+        self.state: AgentState = initial_state
+        self.params: PhysiologySpec = physiology_params
 
     def _init_rngs(self, agent_setup: AgentSetup) -> None:
         """initializes agent lineage."""

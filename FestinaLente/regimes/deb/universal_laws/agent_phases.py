@@ -28,7 +28,7 @@ class DailyAgentFlux:
     interaction_events: int = 0
 
 
-############################# MOBILIZATION OF ENERGY RESERVE INTO USABLE POWER
+'''############################# MOBILIZATION OF ENERGY RESERVE INTO USABLE POWER
 def begin_day_energy_phase(
     state, params: EnergyParams, dt: float
 ) -> MobilizationResult:
@@ -55,7 +55,7 @@ def begin_day_energy_phase(
     p_C: float = mobilize_power_deb_lite(state, params)
     # correct for time step
     # return p_C in J/day, but we will use it for a dt time step, so multiply by dt to get energy available for this time step
-    return p_C * dt
+    return p_C * dt'''
 
 
 ############################# BRANCH SPLIT OF MOBILIZED ENERGY INTO SOMA AND MATURITY/REPRODUCTION
@@ -194,24 +194,3 @@ def maturity_reproduction_phase(state, maturity_surplus, params) -> MaturityResu
 
         return p_H_raw, 0.0
 
-
-#### NEW AGENT CLASS
-from dataclasses import dataclass
-
-
-@dataclass(frozen=True)
-class EnergyParams:
-    v: float = 0.02737  # cm / day
-    p_M: float = 2511.0  # J / day / cm^3
-    E_G: float = 7853.0  # J / cm^3
-    kappa: float = 0.7978  # allocation fraction to soma
-    k_J: float = 0.002  # 1 / day
-    V_min: float = 1e-6  # cm^3 numerical floor
-
-
-@dataclass
-class EnergyState:
-    E_reserve: float  # J
-    V: float  # cm^3
-    E_H: float  # J
-    E_R: float  # J

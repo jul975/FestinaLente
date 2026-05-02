@@ -2,6 +2,8 @@
 import numpy as np
 from dataclasses import dataclass
 
+from FestinaLente.core.domains.NEW_agent import AgentState
+
 
 ## DEB scaffold for energy laws. 
 
@@ -60,7 +62,7 @@ v2:
 
 """
 
-@dataclass(frozen=True)
+"""@dataclass(frozen=True)
 class SheepParams:
     dt_days: float = 1.0
 
@@ -103,7 +105,7 @@ class SheepParams:
     # Reproduction
     reproduction_cost_J: float = 8_000_000.0
     initial_birth_reserve_J: float = 2_000_000.0
-
+"""
 
 
 def stage_from_structure(
@@ -133,8 +135,8 @@ def stage_from_maturity(
 
 ### feeding logic 
 
-def body_mass_kg(state: SheepState) -> float:
-    return state.structure_cm3 / 1000.0
+def body_mass_kg(state: AgentState) -> float:
+    return state.structural_volume / 1000.0
 
 
 def dmi_ratio_for_stage(
@@ -154,7 +156,7 @@ def dmi_ratio_for_stage(
 
 
 def feed_from_grass(
-    state: SheepState,
+    state: AgentState,
     grass_kg_DM: float,
     params: SheepParams,
 ) -> tuple[float, float]:
@@ -236,19 +238,21 @@ def movement_cost_J(
     )
 
 
-def somatic_maintenance_J(
-    state: SheepState,
+def daily_somatic_maintenance_J(
+    state: AgentState,
     params: SheepParams,
 ) -> float:
+    """
+    daily maintance cost
+    """
     return (
         params.somatic_maintenance_J_per_day_cm3
-        * state.structure_cm3
-        * params.dt_days
+        * state.structural_volume
     )
 
 
 def apply_somatic_branch(
-    state: SheepState,
+    state: AgentState,
     somatic_branch_J: float,
     distance_cells: float,
     params: SheepParams,
