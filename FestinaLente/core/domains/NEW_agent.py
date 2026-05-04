@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from FestinaLente.core.contracts.step_results import AgentSetup
+from FestinaLente.regimes.deb.agent_compiler import AgentGenetics
 
 
 MOVEMENT : int = 1
@@ -18,25 +19,6 @@ NOTE:
     tick budget containing branched energy deviations reset each tick, 
 
 """
-
-
-@dataclass(frozen=True)
-class AgentCreationID:
-    owned_id: int
-    parent_id: int
-
-
-@dataclass(frozen=True)
-class AgentDeathID:
-    owned_id: int
-    perent_id: int
-    offspring_count: int
-    age: int
-
-    # offspring_index: []
-    # cause and other metadata as well?
-    cause: str
-
 
 @dataclass(frozen=True)
 class PhysiologySpec:
@@ -63,48 +45,55 @@ class PhysiologySpec:
     c_transport_eff_J_per_kg_m = 2.35  # calibrated for ~86 kg adult, flat terrain
 
 
-class DerivedPhysiologySpec:
-    """derived parameters for convenience, to avoid repeated calculations."""
-
-    E_Rb: float  # reproduction buffer at birth, J
-    E_Rp: float  # reproduction buffer at puberty, J
 
 
 @dataclass
 class AgentState:
+    """
+    Individual sheep DEB state.
+
+    These values change during simulation.
+    """
+
     agent_id: int
+    parent_id: int | None
     offspring_count: int
-    age: float
 
-    reserve_energy: float  # J
-    position: tuple[
-        int, int
-    ]  # (x, y) coordinates => as of now, spatial only on engine level,
-    structural_volume: float  # cm^3
-    maturity: float  # J
-    reproduction_buffer: float  # J
-    age_days: int
-    alive: bool = True
-
-    # movement cost J in state
-
-
-@dataclass
-class PreMovementResult:
+    position: tuple[int, int]
+    age_d: float
     alive: bool
-    movement_cost_j: float
 
+    E_J: float
+    # J. Reserve energy.
+    # Stored usable reserve.
+
+    V_cm3: float
+    # cm^3. Structural volume.
+    # Determines length, maintenance, body mass approximation.
+
+    E_H_J: float
+    # J. Maturity.
+    # Developmental information, not usable reserve.
+
+    E_R_J: float
+    # J. Reproduction buffer.
+    # Adult surplus from maturity/reproduction branch.
 
 
 
 class DEBAgent:
     def __init__(
-        self, agent_setup: AgentSetup, initial_state: TaxonAnchor, physiology_params: PhysiologySpec 
-    ):
+        self, 
+        id : np.int64, 
+        agent_setup : AgentSetup, 
+        position : tuple[np.int64, np.int64], 
+        agent_genetics: AgentGenetics, 
+          
+    ) -> None:
 
         self._init_rngs(agent_setup)
-        self.state: AgentState = initial_state
-        self.params: PhysiologySpec = physiology_params
+        #self._id_setup(id)
+        self._state_setup(id, agent_genetics)
 
     def _init_rngs(self, agent_setup: AgentSetup) -> None:
         """initializes agent lineage."""
@@ -120,6 +109,20 @@ class DEBAgent:
         )
 
         return
+    
+
+
+    def _state_setup(self, creation_id, position ,agent_genetics : AgentGenetics) -> None:
+        self.id = creation_id
+        self.state = AgentState(
+            agent_id=creation_id,
+            parent_id=0,
+            offspring_count=0,
+            position=position,
+            age_d=0,
+            alive=True,
+            E_J=agent_genetics.agent_taxon.
+        )
     
 
     def update_agent_state(): 

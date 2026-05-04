@@ -10,24 +10,10 @@ returning structure should be containing all domains and be used for all interna
 from dataclasses import dataclass
 import numpy as np
 
+from FestinaLente.regimes.deb.agent_compiler import AgentGenetics
 
-@dataclass(frozen=True)
-class CompiledAnimalParams:
-    # NOTE: max harvest => adult sheep 3% of mass for average pasture
-    # NOTE: will need to change agent class 
-    birth_structure_kg: float
-    max_structure_kg: float
-    maturity_move_threshold_J: float
-    maturity_repro_threshold_J: float
 
-    energy_conductance_cm_per_day: float # energy conductance
-    kappa: float
 
-    growth_efficiency: float
-    reproduction_efficiency: float
-
-    maturity_maintenance_rate_per_day: float
-    somatic_maintenance_J_per_kg_day: float
 
 @dataclass(frozen=True)
 class CompiledWorldEnergetics:
@@ -42,5 +28,6 @@ class CompiledWorldEnergetics:
 @dataclass(frozen=True)
 class CompiledEngineParameters:
     ''' PLACEHOLDER '''
-    animal_params: CompiledAnimalParams
+    animal_params: AgentGenetics
+    
     world_energetics: CompiledWorldEnergetics

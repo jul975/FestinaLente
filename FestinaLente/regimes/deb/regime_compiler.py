@@ -1,27 +1,21 @@
 
-from FestinaLente.regimes.deb.domain_dataclasses import EnergeticLawSpec
-from FestinaLente.regimes.deb.universal_laws.theta_E import CompiledEnergetics
+from FestinaLente.regimes.deb.agent_compiler import AgentDerived, AgentGenetics, derive_sheep_taxon
+from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
+from FestinaLente.regimes.deb.universal_laws.theta_E import CompiledEnergetics, CompiledWorldEnergetics
 
+def _compile_agent_genetics(agent_taxon: SheepTaxon) -> AgentGenetics:
+    '''
+    All pre-run computed Agent values
+    '''
+    agent_derived: AgentDerived = derive_sheep_taxon(agent_taxon)
 
-def compile_energetic_law(theta_E: EnergeticLawSpec) -> CompiledEnergetics:
-    reserve_init = theta_E.reserve_init_fraction * theta_E.body_size_ref
-    repr_buffer_init = theta_E.repr_buffer_init_fraction * theta_E.body_size_ref
-    return CompiledEnergetics(
-        reserve_init=reserve_init,
-        repr_buffer_init=repr_buffer_init,
-        eta_base=theta_E.assimilation_efficiency_base,
-        kappa=theta_E.soma_allocation_kappa,
-        maintenance_coeff=theta_E.maintenance_coeff,
-        mass_scaling_exponent=theta_E.mass_scaling_exponent,
-        temperature_ref_K=theta_E.temperature_ref_K,
-        activation_energy_maint=theta_E.activation_energy_maint,
-        activation_energy_assim=theta_E.activation_energy_assim,
-        movement_mode=theta_E.movement_mode,
-        reproduction_mode=theta_E.reproduction_mode,
-        death_mode=theta_E.death_mode,
+    return AgentGenetics(
+        agent_taxon=agent_taxon,
+        agent_derived=agent_derived
     )
 
-def compile_world_law(theta_W: WorldLawSpec, demand_ref_per_tick: float) -> CompiledWorldEnergetics:
+
+def _compile_world_law(theta_W: WorldLawSpec, demand_ref_per_tick: float) -> CompiledWorldEnergetics:
     fertility_norm = generate_patch_field(
         width=theta_W.world_width,
         height=theta_W.world_height,
@@ -50,3 +44,9 @@ def compile_world_law(theta_W: WorldLawSpec, demand_ref_per_tick: float) -> Comp
         initial_stock_field=initial_stock_field,
         inflow_field=inflow_field,
     )
+
+
+
+def compile_engine_regime():
+    agent_genetics: AgentGenetics = _compile_agent_genetics
+    world_params = _compile_world_law
