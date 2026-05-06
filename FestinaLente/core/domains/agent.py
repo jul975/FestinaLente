@@ -49,7 +49,7 @@ ENERGY : int = 3
 
 
 class Agent:
-    ''' agents should be a subclass in order to acces span new agent functionality cleanly. '''
+    ''' agents should be a subclass in order to access span new agent functionality cleanly. '''
     def __init__(self, engine : "Engine" , id : np.int64, agent_setup : AgentSetup, position : tuple[np.int64, np.int64] | None = None) -> None:
         """ engine: Engine
                         id: np.int64

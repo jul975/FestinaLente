@@ -59,6 +59,8 @@ class AgentState:
     parent_id: int | None
     offspring_count: int
 
+    status: int ## status level/maturity
+
     position: tuple[int, int]
     age_d: float
     alive: bool
@@ -110,6 +112,9 @@ class DEBAgent:
 
         return
     
+    # _initiate agent function
+    # => need id setup
+    # => need initial state setup
 
 
     def _state_setup(self, creation_id, position ,agent_genetics : AgentGenetics) -> None:
@@ -126,4 +131,5 @@ class DEBAgent:
     
 
     def update_agent_state(): 
+        # => call deb kernel 
         pass
