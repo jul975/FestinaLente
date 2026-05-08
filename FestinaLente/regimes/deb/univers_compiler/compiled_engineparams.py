@@ -10,7 +10,7 @@ returning structure should be containing all domains and be used for all interna
 from dataclasses import dataclass
 import numpy as np
 
-from FestinaLente.regimes.deb.agent_compiler import AgentGenetics
+from FestinaLente.regimes.deb.univers_compiler.agent_compiler import AgentGenetics
 
 
 

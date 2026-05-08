@@ -1,7 +1,7 @@
 
-from FestinaLente.regimes.deb.agent_compiler import AgentDerived, AgentGenetics, derive_sheep_taxon
+from FestinaLente.regimes.deb.univers_compiler.agent_compiler import AgentDerived, AgentGenetics, derive_sheep_taxon
 from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
-from FestinaLente.regimes.deb.universal_laws.theta_E import CompiledEnergetics, CompiledWorldEnergetics
+from FestinaLente.regimes.deb.univers_compiler.theta_E import CompiledEnergetics, CompiledWorldEnergetics
 
 def _compile_agent_genetics(agent_taxon: SheepTaxon) -> AgentGenetics:
     '''

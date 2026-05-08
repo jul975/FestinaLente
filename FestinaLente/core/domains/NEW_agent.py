@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from FestinaLente.core.contracts.step_results import AgentSetup
-from FestinaLente.regimes.deb.agent_compiler import AgentGenetics
+from FestinaLente.regimes.deb.univers_compiler.agent_compiler import AgentGenetics
 
 
 MOVEMENT : int = 1

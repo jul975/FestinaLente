@@ -7,7 +7,7 @@
 from dataclasses import dataclass
 
 from FestinaLente.regimes.deb.domains.deb_agent.agent_register.agent_logic import daily_somatic_maintenance_J, somatic_maintenance_J
-from FestinaLente.regimes.deb.universal_laws.agent_phases import BranchBudget, MaintenanceResult, MobilizationResult, begin_day_energy_phase, branch_split_phase, maintenance_phase
+from FestinaLente.regimes.deb.domains.deb_agent.agent_register.agent_phases import BranchBudget, MaintenanceResult, MobilizationResult, begin_day_energy_phase, branch_split_phase, maintenance_phase
 
 
 def early_day_energy_update(state, params, dt: float) -> None:
