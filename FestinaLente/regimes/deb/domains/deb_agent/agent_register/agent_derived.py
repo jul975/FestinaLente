@@ -17,6 +17,7 @@ should be blueprint for agent logic and top level specs, => DMI RATIOS ETC spec 
 
 # daily max intake as fraction of body mass, from DMI data for sheep
 from dataclasses import dataclass
+from ssl import create_default_context
 from tkinter import W
 
 from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
@@ -405,7 +406,26 @@ def agent_init(agent_taxon : SheepTaxon):
 
     maturity_init = agent_taxon.E_Hb_J
 
+    def compute_maintence(taxon : SheepTaxon, state : SheepAgentState ,fluxes : SheepFluxes ) -> SheepMaintenanceCosts:
+        somatic_maintance = taxon.p_M_J_per_d_cm3 * state.V_cm3
+        c_j = taxon.k_J_per_d * state.E_H_J 
 
+        return SheepMaintenanceCosts(
+            somatic_maintenance_due_J=somatic_maintance,
+            somatic_maintenance_paid_J=min(somatic_maintance, fluxes.soma_budget_J),
+            somatic_deficit_J=max(somatic_maintance-fluxes.soma_budget_J, 0),
+            soma_surplus_after_maintenance_J=max(fluxes.soma_budget_J - somatic_maintance, 0),
+
+            maturity_maintenance_due_J= c_j,
+            maturity_maintenance_paid_J=min(c_j, fluxes.maturity_repro_budget_J),
+            maturity_deficit_J=max(c_j-fluxes.maturity_repro_budget_J, 0),
+            maturity_surplus_after_maintenance_J=max(fluxes.maturity_repro_budget_J-c_j, 0)
+
+
+
+        )
+
+    created_agents: list[type[SheepAgentState]] = []
 
 
     for e in [0.01, 0.1, 0.2, 0.5, 1.0]:
@@ -415,10 +435,7 @@ def agent_init(agent_taxon : SheepTaxon):
             reserve_capacity_J_per_cm3=derived_values.E_m_J_per_cm3,
         )
 
-        C_s = get_somatic_maintenance_daily_J(
-            structural_volume_cm3=V_init,
-            p_M_J_per_d_cm3=agent_taxon.p_M_J_per_d_cm3,
-        )
+
 
         agent_state = SheepAgentState(
             age_d=0,
@@ -428,16 +445,45 @@ def agent_init(agent_taxon : SheepTaxon):
             E_H_J=maturity_init, 
             E_R_J=0
         )
+        created_agents.append(agent_state)
+
+    for agent in created_agents:
 
         print()
         print("===============")
-        print(f"reserve fill ratio = {agent_state.agent_id}")
-        print(f"structural volume = {agent_state.V_cm3} cm3")
-        print(f"E_reserve = {agent_state.E_J} J")
-        print(f"Maturity = {agent_state.E_H_J}")
+        print(f"reserve fill ratio = {agent.agent_id}")
+        print(f"structural volume = {agent.V_cm3} cm3")
+        print(f"E_reserve = {agent.E_J} J")
+        print(f"Maturity = {agent.E_H_J}")
+
+        fluxes: SheepFluxes = compute_fluxes(
+            state = agent,
+            taxon=agent_taxon,
+            assimilation_J= 0, 
+            dt_d=1)
+        
+        print("")
+        print("FLUX DATA")
+        print(fluxes.dt_d, "dt")
+        print(fluxes.L_cm, "L_cm")
+        print(fluxes.body_mass_kg, "body_mass")
+        print(fluxes.p_C_J_per_d, "pC")
+        print(fluxes.mobilized_J, "mobilized_J")
+        print(fluxes.soma_budget_J, "soma_budget_j")
+        print(fluxes.maturity_repro_budget_J, "maturity_repro_budget_j")
+        print(fluxes.assimilation_J, "assimilation")
+
+        maintance_cost: SheepMaintenanceCosts = compute_maintence(taxon=agent_taxon, state=agent, fluxes=fluxes)
+
+        print("")
+        print('MAINTEN')
+        print(maintance_cost)
+
+        
 
 
-        print(f"C_s = {C_s} J/day")
+
+
 
 
 
