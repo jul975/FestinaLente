@@ -3,9 +3,8 @@
 
 from dataclasses import dataclass
 
-from FestinaLente.regimes.deb.domains.deb_agent.agent_register.agent_flux import SheepFluxes, compute_fluxes
+from FestinaLente.regimes.deb.domains.deb_agent.agent_register.agent_derived import AgentDerived, derive_sheep_taxon
 from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
-from FestinaLente.regimes.deb.univers_compiler.agent_compiler import AgentDerived, derive_sheep_taxon
 
 
 
@@ -37,16 +36,21 @@ class SheepAgentState:
     # J. Reproduction buffer.
     # Adult surplus from maturity/reproduction branch.
 
+    body_mass_kg: float
+
+    wet_weight_init: float
 
 
 
 
 
 
-def agent_state_init(agent_id, agent_taxon : SheepTaxon, filling_ratio: float) -> SheepAgentState:
+def agent_state_init(agent_id, agent_taxon : SheepTaxon, filling_ratio: float, wet_mass_initiator : float|None = None) -> SheepAgentState:
     if filling_ratio < 0:
         raise ValueError("filling ratio must be >= 0 ")
     
+    if wet_mass_initiator == None:
+        wet_mass_initiator = agent_taxon.birth_wet_mass_g
 
     
     derived_values: AgentDerived = derive_sheep_taxon(agent_taxon)
@@ -121,19 +125,19 @@ def agent_state_init(agent_id, agent_taxon : SheepTaxon, filling_ratio: float) -
         return p_M_J_per_d_cm3 * structural_volume_cm3
 
 
-    wet_mass_multiplier = get_wet_mass_size_multiplier(
+    wet_mass_multiplier: float = get_wet_mass_size_multiplier(
         ultimate_wet_mass_g=agent_taxon.female_ultimate_wet_mass_g,
         ultimate_structural_volume_cm3=derived_values.V_i_cm3,
     )
 
-    V_init = get_structural_volume_from_wet_mass_stage1(
-        wet_mass_g=agent_taxon.birth_wet_mass_g,
+    V_init: float = get_structural_volume_from_wet_mass_stage1(
+        wet_mass_g=wet_mass_initiator,
         wet_mass_size_multiplier=wet_mass_multiplier,
     )
 
-    maturity_init = agent_taxon.E_Hb_J
+    maturity_init: float = agent_taxon.E_Hb_J
 
-    E_reserve = get_reserve_energy_from_volume(
+    E_reserve: float = get_reserve_energy_from_volume(
         structural_volume_cm3=V_init,
         reserve_fill_ratio=filling_ratio,
         reserve_capacity_J_per_cm3=derived_values.E_m_J_per_cm3
@@ -150,7 +154,9 @@ def agent_state_init(agent_id, agent_taxon : SheepTaxon, filling_ratio: float) -
         E_J=E_reserve,
         V_cm3=V_init,
         E_H_J=maturity_init, 
-        E_R_J=0
+        E_R_J=0,
+        body_mass_kg=wet_mass_initiator/1000,
+        wet_weight_init=wet_mass_initiator
     )
 
 

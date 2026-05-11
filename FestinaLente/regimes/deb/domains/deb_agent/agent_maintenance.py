@@ -60,15 +60,15 @@ class SheepMaintenanceCosts:
     # Formula: max(B_H - C_J, 0)
 
 
-def compute_maintence(taxon : SheepTaxon, state : SheepAgentState ,fluxes : SheepFluxes ) -> SheepMaintenanceCosts:
-        somatic_maintance = taxon.p_M_J_per_d_cm3 * state.V_cm3
-        c_j = taxon.k_J_per_d * state.E_H_J 
+def compute_maintenance(taxon : SheepTaxon, state : SheepAgentState ,fluxes : SheepFluxes ) -> SheepMaintenanceCosts:
+        somatic_maintenance: float = taxon.p_M_J_per_d_cm3 * state.V_cm3
+        c_j: float = taxon.k_J_per_d * state.E_H_J 
 
         return SheepMaintenanceCosts(
-            somatic_maintenance_due_J=somatic_maintance,
-            somatic_maintenance_paid_J=min(somatic_maintance, fluxes.soma_budget_J),
-            somatic_deficit_J=max(somatic_maintance-fluxes.soma_budget_J, 0),
-            soma_surplus_after_maintenance_J=max(fluxes.soma_budget_J - somatic_maintance, 0),
+            somatic_maintenance_due_J=somatic_maintenance,
+            somatic_maintenance_paid_J=min(somatic_maintenance, fluxes.soma_budget_J),
+            somatic_deficit_J=max(somatic_maintenance-fluxes.soma_budget_J, 0),
+            soma_surplus_after_maintenance_J=max(fluxes.soma_budget_J - somatic_maintenance, 0),
 
             maturity_maintenance_due_J= c_j,
             maturity_maintenance_paid_J=min(c_j, fluxes.maturity_repro_budget_J),

@@ -33,16 +33,20 @@ def test_adult_reproduces_when_buffer_is_filled():
 def test_sheep_dies_when_costs_cannot_be_paid():
     ..."""
 
+from FestinaLente.regimes.deb.domains.deb_agent.agent_maintenance import SheepMaintenanceCosts, compute_maintenance
+from FestinaLente.regimes.deb.domains.deb_agent.agent_register.agent_flux import SheepFluxes, compute_fluxes
+from FestinaLente.regimes.deb.domains.deb_agent.agent_state import SheepAgentState, agent_state_init
+from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
+
+
 def test_states() -> None:
 
     created_agents: list[type[SheepAgentState]] = []
+    test_taxon = SheepTaxon()
 
 
     for e in [0.01, 0.1, 0.2, 0.5, 1.0]:
-        
-
-
-
+        agent_state = agent_state_init(agent_id=e, agent_taxon= test_taxon, filling_ratio=e)
         created_agents.append(agent_state)
 
     for agent in created_agents:
@@ -54,9 +58,10 @@ def test_states() -> None:
         print(f"E_reserve = {agent.E_J} J")
         print(f"Maturity = {agent.E_H_J}")
 
+     
         fluxes: SheepFluxes = compute_fluxes(
             state = agent,
-            taxon=agent_taxon,
+            taxon=test_taxon,
             assimilation_J= 0, 
             dt_d=1)
         
@@ -71,15 +76,14 @@ def test_states() -> None:
         print(fluxes.maturity_repro_budget_J, "maturity_repro_budget_j")
         print(fluxes.assimilation_J, "assimilation")
 
-        maintance_cost: SheepMaintenanceCosts = compute_maintence(taxon=agent_taxon, state=agent, fluxes=fluxes)
+        maintance_cost: SheepMaintenanceCosts = compute_maintenance(taxon=test_taxon, state=agent, fluxes=fluxes)
 
         print("")
         print('MAINTEN')
         print(maintance_cost)
+ 
 
-        
-
-
+test_states()
 
 
 
