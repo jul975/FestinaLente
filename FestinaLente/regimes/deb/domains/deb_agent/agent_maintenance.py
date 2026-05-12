@@ -20,7 +20,7 @@ v / L = reserve turnover/conductance rate, 1/day
 
 from dataclasses import dataclass
 
-from FestinaLente.regimes.deb.domains.deb_agent.agent_register.agent_flux import SheepFluxes
+from FestinaLente.regimes.deb.domains.deb_agent.agent_flux import SheepFluxes
 from FestinaLente.regimes.deb.domains.deb_agent.agent_state import SheepAgentState
 from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
 
@@ -60,9 +60,18 @@ class SheepMaintenanceCosts:
     # Formula: max(B_H - C_J, 0)
 
 
-def compute_maintenance(taxon : SheepTaxon, state : SheepAgentState ,fluxes : SheepFluxes ) -> SheepMaintenanceCosts:
-        somatic_maintenance: float = taxon.p_M_J_per_d_cm3 * state.V_cm3
-        c_j: float = taxon.k_J_per_d * state.E_H_J 
+
+
+
+def compute_maintenance(
+            taxon : SheepTaxon, 
+            state : SheepAgentState ,
+            fluxes : SheepFluxes, 
+            dt: float = 1.0 
+            ) -> SheepMaintenanceCosts:
+        
+        somatic_maintenance: float = taxon.p_M_J_per_d_cm3 * state.V_cm3 * dt
+        c_j: float = taxon.k_J_per_d * state.E_H_J *dt
 
         return SheepMaintenanceCosts(
             somatic_maintenance_due_J=somatic_maintenance,

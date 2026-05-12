@@ -34,9 +34,28 @@ def test_sheep_dies_when_costs_cannot_be_paid():
     ..."""
 
 from FestinaLente.regimes.deb.domains.deb_agent.agent_maintenance import SheepMaintenanceCosts, compute_maintenance
-from FestinaLente.regimes.deb.domains.deb_agent.agent_register.agent_flux import SheepFluxes, compute_fluxes
+from FestinaLente.regimes.deb.domains.deb_agent.agent_flux import SheepFluxes, compute_fluxes
+from FestinaLente.regimes.deb.domains.deb_agent.agent_reserve import InteractionBudget, InteractionBudget, get_interaction_reserve
 from FestinaLente.regimes.deb.domains.deb_agent.agent_state import SheepAgentState, agent_state_init
 from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
+
+
+class AgentTest:
+    def __init__(
+            self,
+            agent_id: int,
+            agent_taxon: SheepTaxon, 
+            filling_ratio: float = 1.0
+            ) -> None:
+        self.state: SheepAgentState = agent_state_init(
+            agent_id=agent_id, 
+            agent_taxon=agent_taxon,
+            filling_ratio=filling_ratio
+            )
+        
+        self.age_d : int = 0
+        
+        pass
 
 
 def test_states() -> None:
@@ -46,7 +65,7 @@ def test_states() -> None:
 
 
     for e in [0.01, 0.1, 0.2, 0.5, 1.0]:
-        agent_state = agent_state_init(agent_id=e, agent_taxon= test_taxon, filling_ratio=e)
+        agent_state: SheepAgentState = agent_state_init(agent_id=e, agent_taxon= test_taxon, filling_ratio=e)
         created_agents.append(agent_state)
 
     for agent in created_agents:
@@ -81,8 +100,18 @@ def test_states() -> None:
         print("")
         print('MAINTEN')
         print(maintance_cost)
+        print()
+        print("soma reserve for interactions",maintance_cost.soma_surplus_after_maintenance_J)
+        print("maturity reserve:", maintance_cost.maturity_surplus_after_maintenance_J)
  
 
+        interaction_r: InteractionBudget = get_interaction_reserve(maintance_cost, 4)
+        print()
+        print(f"interaction dt: {interaction_r.delta_t}")
+        print(f"interaction somatic r: {interaction_r.somatic_reserve}")
+        print(f"interaction per tick: {interaction_r.per_tick_movement_reserve}")
+        print(f"interaction maturity: {interaction_r.maturation_reserve}")
+        print("====================================")
 test_states()
 
 
