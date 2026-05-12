@@ -124,11 +124,7 @@ class Engine:
             # biological constraints
             assert agent.age >= 0
             assert agent.age <= self.max_age
-<<<<<<< HEAD
-            assert agent.energy_reserve >= 0 or not agent.alive
-=======
             assert agent.energy_level >= 0 or not agent.alive
->>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
 
         # world compatibility
         assert self.world.world_width == self.world_params.world_width
@@ -386,11 +382,7 @@ class Engine:
         ).reshape(len(sorted_agents), 2)
 
         energies = np.fromiter(
-<<<<<<< HEAD
-            (agent.energy_reserve for agent in sorted_agents),
-=======
             (agent.energy_level for agent in sorted_agents),
->>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
             dtype=np.int16,
             count=len(sorted_agents)
         )
