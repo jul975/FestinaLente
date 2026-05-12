@@ -49,7 +49,11 @@ ENERGY : int = 3
 
 
 class Agent:
+<<<<<<< HEAD
     ''' agents should be a subclass in order to access span new agent functionality cleanly. '''
+=======
+    ''' agents should be a subclass in order to acces span new agent functionality cleanly. '''
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
     def __init__(self, engine : "Engine" , id : np.int64, agent_setup : AgentSetup, position : tuple[np.int64, np.int64] | None = None) -> None:
         """ engine: Engine
                         id: np.int64
@@ -94,7 +98,11 @@ class Agent:
         else:
             self.position = position
         self.alive : bool = True
+<<<<<<< HEAD
         self.energy_reserve = self.energy_rng.integers(self.engine.energy_params.energy_init_range[0], self.engine.energy_params.energy_init_range[1])
+=======
+        self.energy_level = self.energy_rng.integers(self.engine.energy_params.energy_init_range[0], self.engine.energy_params.energy_init_range[1])
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
 
 
 
@@ -116,7 +124,11 @@ class Agent:
 
         # biological state
         assert self.age >= 0
+<<<<<<< HEAD
         assert self.energy_reserve >= 0 or not self.alive
+=======
+        assert self.energy_level >= 0 or not self.alive
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
 
         # RNG integrity
         assert isinstance(self.move_rng, np.random.Generator)
@@ -143,7 +155,11 @@ class Agent:
 
     def harvest_resources(self, harvest : np.int64) -> None:
         """ harvests resources from current position. """
+<<<<<<< HEAD
         self.energy_reserve += harvest
+=======
+        self.energy_level += harvest
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
 
 
 
@@ -164,23 +180,37 @@ class Agent:
         self.position = candidates[idx].position
 
         # NOTE: 8/6/24 - deduct energy after movement, future proofing for potential movement costs that depend on the environment or movement range.
+<<<<<<< HEAD
         self.energy_reserve -= self.engine.energy_params.movement_cost
 
         if self.energy_reserve <= 0:
+=======
+        self.energy_level -= self.engine.energy_params.movement_cost
+
+        if self.energy_level <= 0:
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
             self.alive = False
             return False
         return True
     
     def can_reproduce(self) -> bool:
             """ check energy level"""
+<<<<<<< HEAD
             if self.energy_reserve >= self.engine.energy_params.reproduction_threshold:
+=======
+            if self.energy_level >= self.engine.energy_params.reproduction_threshold:
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
                 return True
             return False
             
     def does_reproduce(self) -> bool:
             reproduce = self.repro_rng.random()
             if reproduce < self.engine.reproduction_probability:
+<<<<<<< HEAD
                 self.energy_reserve -= self.engine.energy_params.reproduction_cost
+=======
+                self.energy_level -= self.engine.energy_params.reproduction_cost
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
                 return True
             return False
          

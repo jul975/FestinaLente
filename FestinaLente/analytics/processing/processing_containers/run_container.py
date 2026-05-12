@@ -62,7 +62,11 @@ class SingleRunWorldFrameSummary:
         - mean_resource_heterogeneity: mean of the standard deviation of resource levels across cells for each captured world frame.
         - mean_resource_depletion_rate: mean rate of change of resource levels across cells and captured
 
+<<<<<<< HEAD
         - mean_energy_reserve_sampled: mean energy level of agents across captured world frames.
+=======
+        - mean_energy_level_sampled: mean energy level of agents across captured world frames.
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
         - mean_energy_std_sampled: mean of the standard deviation of energy levels of agents across
         - mean_energy_cv_sampled: mean of the coefficient of variation of energy levels of agents across captured world frames.
 
@@ -77,7 +81,11 @@ class SingleRunWorldFrameSummary:
     mean_resource_heterogeneity: float
     mean_resource_depletion_rate: float
 
+<<<<<<< HEAD
     mean_energy_reserve_sampled: float
+=======
+    mean_energy_level_sampled: float
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
     mean_energy_std_sampled: float
     mean_energy_cv_sampled: float
 

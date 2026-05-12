@@ -29,7 +29,11 @@ def aggregate_world_frame_summaries(run_summaries : dict[np.int64, SingleRunWorl
     mean_resource_heterogeneity_over_runs = np.mean([summary.mean_resource_heterogeneity for summary in run_summaries.values()])
     mean_resource_depletion_rate_over_runs = np.mean([summary.mean_resource_depletion_rate for summary in run_summaries.values()])
 
+<<<<<<< HEAD
     mean_energy_reserve_sampled_over_runs = np.mean([summary.mean_energy_reserve_sampled for summary in run_summaries.values()])
+=======
+    mean_energy_level_sampled_over_runs = np.mean([summary.mean_energy_level_sampled for summary in run_summaries.values()])
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
     mean_energy_std_sampled_over_runs = np.mean([summary.mean_energy_std_sampled for summary in run_summaries.values()])
     mean_energy_cv_sampled_over_runs = np.mean([summary.mean_energy_cv_sampled for summary in run_summaries.values()])
 
@@ -44,7 +48,11 @@ def aggregate_world_frame_summaries(run_summaries : dict[np.int64, SingleRunWorl
         mean_resource_heterogeneity_over_runs=mean_resource_heterogeneity_over_runs,
         mean_resource_depletion_rate_over_runs=mean_resource_depletion_rate_over_runs,
 
+<<<<<<< HEAD
         mean_energy_reserve_sampled_over_runs=mean_energy_reserve_sampled_over_runs,
+=======
+        mean_energy_level_sampled_over_runs=mean_energy_level_sampled_over_runs,
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
         mean_energy_std_sampled_over_runs=mean_energy_std_sampled_over_runs,
         mean_energy_cv_sampled_over_runs=mean_energy_cv_sampled_over_runs,
 

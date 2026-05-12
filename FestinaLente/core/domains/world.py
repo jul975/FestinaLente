@@ -109,6 +109,7 @@ class World:
     
         
     def _generate_fertility_fields(self) -> np.ndarray:
+<<<<<<< HEAD
         """
         Generate static fertility landscape from smoothed random noise.
 
@@ -126,17 +127,27 @@ class World:
         """
 
         # 1) Derive smoothing kernel from spatial correlation.
+=======
+        """Generate static fertility landscape from smoothed random noise."""
+
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
         raw_kernel = self.landscape_params.correlation * self.world_width
         kernel_size = max(3, int(round(raw_kernel)))
         if kernel_size % 2 == 0:
             kernel_size += 1
         radius = kernel_size // 2
 
+<<<<<<< HEAD
         # 2) Sample raw world noise.
         noise = self.rng_world.random((self.world_height, self.world_width))
         smooth = np.zeros_like(noise)
 
         # 3) Toroidal local mean filter.
+=======
+        noise = self.rng_world.random((self.world_height, self.world_width))
+        smooth = np.zeros_like(noise)
+
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
         for y in range(self.world_height):
             for x in range(self.world_width):
                 total = 0.0
@@ -149,7 +160,10 @@ class World:
                         count += 1
                 smooth[y, x] = total / count
 
+<<<<<<< HEAD
         # 4) Validate shaping controls.
+=======
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
         contrast = float(self.landscape_params.contrast)
         floor = float(self.landscape_params.floor)
 
@@ -158,6 +172,7 @@ class World:
         if not (0.0 <= floor < 1.0):
             raise ValueError("landscape floor must satisfy 0 <= floor < 1")
 
+<<<<<<< HEAD
         # 5) Apply contrast directly to the smoothed field.
         #    Important: do NOT min-max normalize here.
         #    That would change legacy semantics even when contrast=1 and floor=0.
@@ -168,6 +183,21 @@ class World:
         fertility01 = floor + (1.0 - floor) * contrasted
 
         # 7) Scale to integer fertility field.
+=======
+        lo = float(smooth.min())
+        hi = float(smooth.max())
+
+        if hi > lo:
+            norm = (smooth - lo) / (hi - lo)
+        else:
+            norm = np.full_like(smooth, 0.5)
+
+        contrasted = 0.5 + contrast * (norm - 0.5)
+        contrasted = np.clip(contrasted, 0.0, 1.0)
+
+        fertility01 = floor + (1.0 - floor) * contrasted
+
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
         fertility = np.rint(
             fertility01 * self.resource_params.max_resource_level
         ).astype(np.int64)
@@ -176,6 +206,13 @@ class World:
 
 
 
+<<<<<<< HEAD
+=======
+
+
+
+
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
 # call from transitions
     def harvest(self, agents : list[Agent], position : tuple[np.int64, np.int64]) -> None:
         """ harvests resources from a given cell, deterministically. """

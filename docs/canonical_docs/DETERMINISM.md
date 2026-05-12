@@ -76,6 +76,7 @@ movement_phase() → interaction_phase() → biology_phase() → commit_phase() 
 
 No reordering, no conditional skipping. This is enforced in [FestinaLente/core/engine.py](FestinaLente/core/engine.py).
 
+<<<<<<< HEAD
 ### World / OccupancyIndex / TransitionContext Contract: State Freezing
 
 The simulator uses the **State Freezing** pattern to separate phase evaluation from state mutation. This is essential for both determinism and testability.
@@ -254,6 +255,37 @@ The agent dict maintains encounter order across:
 - Removals (never re-inserted)
 
 When `OccupancyIndex.build_from_agents(agents)` iterates `agents.values()`, the encounter order is preserved, ensuring harvest distributions are deterministic.
+=======
+### Deterministic Traversal Order
+
+At the core of determinism is **insertion-ordered dictionary traversal**. Python 3.7+ guarantees that `dict` insertion order is preserved.
+
+#### Agent Dictionary Order
+
+The agent dict (`engine.agents`) maintains:
+1. **Founders** added in range order: `[0, initial_agent_count)`
+2. **Children** appended at end in commit order
+3. Dead agents removed (never re-added)
+4. Result: **insertion order = genealogical order** (with founders first)
+
+#### Movement Phase: Occupancy Index
+
+```python
+# FestinaLente/core/spatial/occupancy_index.py
+
+@classmethod
+def build_from_agents(cls, agents: dict[int, Agent]):
+    index = OccupancyIndex()
+    for agent in agents.values():  # iteration preserves insertion order
+        if agent.alive:
+            index.add(agent)
+    return index
+```
+
+Agents are processed in encounter order (dictionary order), not re-sorted per tick. This is critical for determinism.
+
+Within each cell, local agents are stored in a list in encounter order. Resource distribution remainder is allocated to the first $r$ agents in this list.
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
 
 ### Deterministic Structural Mutation
 

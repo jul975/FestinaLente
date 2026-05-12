@@ -24,7 +24,11 @@ class AgentSnapshot:
     id : int
     agent_spawn_count : int
     position : tuple[int, int]
+<<<<<<< HEAD
     energy_reserve : int
+=======
+    energy_level : int
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
     alive : bool
 
     age : int
@@ -100,7 +104,11 @@ def _get_agent_snapshot(agent : "Agent") -> AgentSnapshot:
         id = agent.id,
         agent_spawn_count = agent.offspring_count,
         position = agent.position,
+<<<<<<< HEAD
         energy_reserve = agent.energy_reserve,
+=======
+        energy_level = agent.energy_level,
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
         alive = agent.alive,
 
         age = agent.age,
@@ -175,7 +183,11 @@ def _agent_from_snapshot(agent_cls, agent_snapshot: AgentSnapshot, engine: "Engi
     agent_clone.age = agent_snapshot.age
     agent_clone.position = agent_snapshot.position
     agent_clone.alive = agent_snapshot.alive
+<<<<<<< HEAD
     agent_clone.energy_reserve = agent_snapshot.energy_reserve
+=======
+    agent_clone.energy_level = agent_snapshot.energy_level
+>>>>>>> f7a942f24f2f5eaf5ffee752e1e75bbee4808812
 
     agent_clone.offspring_count = agent_snapshot.agent_spawn_count  
 
