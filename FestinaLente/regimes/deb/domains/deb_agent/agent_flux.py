@@ -52,7 +52,7 @@ def compute_fluxes(
     assimilation_J: float,
     dt_d: float,
 ) -> SheepFluxes:
-    V_safe = max(state.V_cm3, taxon.V_min_cm3)
+    V_safe: float = max(state.V_cm3, taxon.V_min_cm3)
     L_cm = V_safe ** (1.0 / 3.0)
 
     body_mass_kg: float = max(
@@ -62,6 +62,9 @@ def compute_fluxes(
 
     p_C = max(state.E_J * taxon.v_cm_per_d / L_cm, 0.0)
     mobilized_J: float = min(state.E_J, p_C * dt_d)
+
+    state.E_J -= mobilized_J
+
     soma_budget_J: float = taxon.kappa * mobilized_J
     maturity_repro_budget_J: float = (1.0 - taxon.kappa) * mobilized_J
 
