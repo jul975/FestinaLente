@@ -18,11 +18,10 @@ class SheepAgentState:
     """
 
     agent_id: float
-    parent_id: float | None = None
+    # parent_id: float | None = None
 
-    offspring_count: int = 0
+    # offspring_count: int = 0
 
-    position: tuple[float, float] 
 
     age_d: float
     alive: bool 
@@ -52,7 +51,7 @@ class SheepAgentState:
 
 
 
-def agent_state_init(agent_id, agent_taxon : SheepTaxon, filling_ratio: float, wet_mass_initiator : float|None = None) -> SheepAgentState:
+def agent_state_init(agent_id : int, agent_taxon : SheepTaxon, filling_ratio: float, wet_mass_initiator : float|None = None) -> SheepAgentState:
     if filling_ratio < 0:
         raise ValueError("filling ratio must be >= 0 ")
     
@@ -118,19 +117,6 @@ def agent_state_init(agent_id, agent_taxon : SheepTaxon, filling_ratio: float, w
         return reserve_fill_ratio * reserve_capacity_J_per_cm3 * structural_volume_cm3
 
 
-    def get_somatic_maintenance_daily_J(
-        structural_volume_cm3: float,
-        p_M_J_per_d_cm3: float,
-    ) -> float:
-        """
-        C_s = [p_M] * V * dt
-        With dt = 1 day.
-        """
-        if structural_volume_cm3 <= 0:
-            raise ValueError("structural_volume_cm3 must be > 0")
-
-        return p_M_J_per_d_cm3 * structural_volume_cm3
-
 
     wet_mass_multiplier: float = get_wet_mass_size_multiplier(
         ultimate_wet_mass_g=agent_taxon.female_ultimate_wet_mass_g,
@@ -152,20 +138,25 @@ def agent_state_init(agent_id, agent_taxon : SheepTaxon, filling_ratio: float, w
     
 
 
-
-
-
-    return SheepAgentState(
-        age_d=0,
+    agent_state = SheepAgentState(
         agent_id=agent_id,
+        age_d=0,
         E_J=E_reserve,
         V_cm3=V_init,
-        E_H_J=maturity_init, 
+        E_H_J=maturity_init,
         E_R_J=0,
         body_mass_kg=wet_mass_initiator/1000,
-        wet_weight_init=wet_mass_initiator
+        wet_weight_init=wet_mass_initiator,
+        alive=True,
     )
 
 
 
+    return (agent_state, derived_values)
 
+
+
+
+
+if __name__ == "__main__":
+    pass 

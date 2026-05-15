@@ -44,3 +44,16 @@ def compute_locomotion_cost(
         speed_m_per_min=speed_m_per_min
     )
     return c_transport_J_per_kg_m * body_mass_kg * distance_m
+
+
+def compute_max_locomotion_distance_m(
+    somatic_energy_J: float,
+    c_transport_J_per_kg_m: float,
+    body_mass_kg: float, 
+    terrain_factor: float = 1.0) -> float:
+    """ compute maximum locomotion distance in meters given available energy and cost per meter """
+    if c_transport_J_per_kg_m <= 0:
+        raise ValueError("Transport cost per kg per meter must be positive.")
+    if somatic_energy_J <= 0:
+        return 0.0  # No energy means no movement
+    return somatic_energy_J / (c_transport_J_per_kg_m * body_mass_kg * terrain_factor)

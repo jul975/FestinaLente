@@ -18,3 +18,14 @@ class SheepInteractionResult:
 
     final_x: int
     final_y: int
+
+
+def interaction_tick():
+    # Movement
+    
+    # Harvest
+
+
+
+
+    return 

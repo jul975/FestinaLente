@@ -208,12 +208,7 @@ class AgentTest:
 ##################################
     def early_day_tick(self) -> None:
         """ compute fluxes and maintenance costs for the day, before interactions. """
-        self.day_fluxes = compute_fluxes( 
-            state=self.state,
-            taxon=self.agent_taxon,
-            assimilation_J=0,
-            dt_d=1
-        )
+        
         self.maintenance_costs: SheepMaintenanceCosts = compute_maintenance(
             taxon=self.agent_taxon,
             state=self.state,
