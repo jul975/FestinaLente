@@ -2,6 +2,7 @@
 
 
 from dataclasses import dataclass
+from turtle import position
 
 from FestinaLente.regimes.deb.domains.deb_agent.derived import AgentDerived, derive_sheep_taxon
 from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
@@ -17,8 +18,14 @@ class SheepAgentState:
     """
 
     agent_id: float
+    parent_id: float | None = None
+
+    offspring_count: int = 0
+
+    position: tuple[float, float] 
 
     age_d: float
+    alive: bool 
 
     E_J: float
     # J. Reserve energy.
