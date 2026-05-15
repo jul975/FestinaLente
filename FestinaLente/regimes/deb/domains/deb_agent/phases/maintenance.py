@@ -20,8 +20,8 @@ v / L = reserve turnover/conductance rate, 1/day
 
 from dataclasses import dataclass
 
-from FestinaLente.regimes.deb.domains.deb_agent.agent_flux import SheepFluxes
-from FestinaLente.regimes.deb.domains.deb_agent.agent_state import SheepAgentState
+from FestinaLente.regimes.deb.domains.deb_agent.phases.flux import SheepFluxes
+from FestinaLente.regimes.deb.domains.deb_agent.state import SheepAgentState
 from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
 
 @dataclass(frozen=True)

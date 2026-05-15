@@ -1,7 +1,7 @@
 
 from dataclasses import dataclass
 
-from FestinaLente.regimes.deb.domains.deb_agent.agent_interaction_budget import InteractionBudget
+from FestinaLente.regimes.deb.domains.deb_agent.cycle.agent_interaction_budget import InteractionBudget
 
 
 @dataclass(frozen=True)

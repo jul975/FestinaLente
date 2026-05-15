@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from FestinaLente.regimes.deb.domains.deb_agent.agent_state import SheepAgentState
+from FestinaLente.regimes.deb.domains.deb_agent.state import SheepAgentState
 from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
 
 

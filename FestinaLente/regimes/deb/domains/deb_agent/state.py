@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass
 
-from FestinaLente.regimes.deb.domains.deb_agent.agent_derived import AgentDerived, derive_sheep_taxon
+from FestinaLente.regimes.deb.domains.deb_agent.derived import AgentDerived, derive_sheep_taxon
 from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
 
 

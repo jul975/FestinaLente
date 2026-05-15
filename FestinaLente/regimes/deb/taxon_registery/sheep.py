@@ -209,3 +209,7 @@ class SheepTaxon:
     V_min_cm3: float = 1e-6
     # cm^3.
     # Numerical guard for structural volume.
+
+
+    ### temp location source from borckway
+    baseline_c_transport_J_per_kg_m: float = 2.35
