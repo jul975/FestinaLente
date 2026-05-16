@@ -1,10 +1,6 @@
-
 #########################################################
-
-
-
-
-
+#                   AGENT DEB TEST
+#########################################################
 from FestinaLente.regimes.deb.domains.deb_agent.cycle.day_open_tick import open_day_tick
 from FestinaLente.regimes.deb.domains.deb_agent.derived import AgentDerived
 from FestinaLente.regimes.deb.domains.deb_agent.ledger import AgentDayLedger
@@ -31,7 +27,12 @@ class TestAgentDay:
 
     def early_day_tick(self) -> AgentDayLedger:
         """pre-movement energy update, which includes mobilization, branch split, maintenance, movement cost deduction, etc. Returns day ledger for the day tick."""
-        self.day_ledger = open_day_tick(self.state, self.params, self.derived)
+        self.day_ledger: AgentDayLedger = open_day_tick(
+            agent_state=self.state, 
+            paramsTaxon=self.params, 
+            derived=self.derived,
+            day_length_d=4.0
+        )
         return self.day_ledger
 
     def day_tick(self) -> AgentDayLedger:
@@ -59,7 +60,7 @@ if __name__ == "__main__":
         params=params
     )
 
-    print(testObj.state)
+    
 
 
 

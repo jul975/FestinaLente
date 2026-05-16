@@ -21,11 +21,10 @@ class SheepInteractionResult:
 
 
 def interaction_tick():
-    # Movement
-    
-    # Harvest
+    # draw rng for harvest success
+    # agent_harvests_resource()
 
-
-
+    # draw rng for movement success
+    # agent_moves()
 
     return 

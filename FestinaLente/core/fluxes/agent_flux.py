@@ -3,6 +3,9 @@
 
 from dataclasses import dataclass
 
+from FestinaLente.regimes.deb.domains.deb_agent.state import SheepAgentState
+from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
+
 
 @dataclass(frozen=True)
 class AgentFluxes:
@@ -48,8 +51,8 @@ class AgentFluxes:
 
 
 def compute_fluxes(
-    state: AgentState,
-    taxon: AgentTaxon,
+    state: SheepAgentState,
+    taxon: SheepTaxon,
     assimilation_J: float,
     dt_d: float,
 ) -> AgentFluxes:

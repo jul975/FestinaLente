@@ -5,9 +5,10 @@
 
 from FestinaLente.core.fluxes.agent_flux import AgentFluxes, compute_fluxes
 from FestinaLente.regimes.deb.domains.deb_agent.derived import AgentDerived
-from FestinaLente.regimes.deb.domains.deb_agent.ledger import AgentDayLedger, InteractionBudget, get_interaction_reserve
+from FestinaLente.regimes.deb.domains.deb_agent.ledger import AgentDayLedger
 from FestinaLente.regimes.deb.domains.deb_agent.phases.flux import SheepFluxes
 from FestinaLente.regimes.deb.domains.deb_agent.phases.maintenance import SheepMaintenanceCosts
+from FestinaLente.regimes.deb.domains.deb_agent.phases.movement import compute_max_locomotion_distance_m
 from FestinaLente.regimes.deb.domains.deb_agent.state import SheepAgentState
 from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
 
@@ -120,16 +121,22 @@ def open_day_tick(
         dt=1.0
     )
 
+    max_movement_distance_m: float = compute_max_locomotion_distance_m(
+        somatic_energy_J=computed_maintenance.soma_surplus_after_maintenance_J,
+        c_transport_J_per_kg_m=2.35, # for now, using the baseline transport cost from Brockway and Boyne 1980, but this can be adjusted based on expected movement conditions
+        body_mass_kg=fluxes.body_mass_kg,
+        terrain_factor=1.0 # can be adjusted based on expected terrain difficulty
+    )
+    locomotion_cost = max_movement_distance_m * 2.35 * fluxes.body_mass_kg # using baseline transport cost for now
     
     return AgentDayLedger(
         agent_id=agent_state.agent_id,
         biological_day=int(agent_state.age_d),
-        fluxes=fluxes,
+        mobilized_J=fluxes.mobilized_J,
         soma_after_maintenance_J=computed_maintenance.soma_surplus_after_maintenance_J,
         maturity_after_maintenance_J=computed_maintenance.maturity_surplus_after_maintenance_J,
         interaction_ticks_total=0, # to be updated during interaction ticks
         interaction_ticks_completed=0,
-        movement_budget_per_tick_J=computed_maintenance.soma_surplus_after_maintenance_J, # for now, all maintenance surplus goes to movement budget, but this can be adjusted based on expected interaction costs
-        movement_budget_per_tick_m=computed_maintenance.soma_surplus_after_maintenance_J / paramsTaxon.movement_cost_J_per_m if computed_maintenance.soma_surplus_after_maintenance_J > 0 else 0.0
-
+        movement_budget_per_tick_J=locomotion_cost/day_length_d, # for now, all maintenance surplus goes to movement budget, but this can be adjusted based on expected interaction costs
+        movement_budget_per_tick_m=max_movement_distance_m/day_length_d
     )
