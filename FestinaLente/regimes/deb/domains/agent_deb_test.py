@@ -36,15 +36,23 @@ class TestAgentDay:
         return self.day_ledger
 
     def day_tick(self) -> AgentDayLedger:
+        # use rng to draw on agent level 
+        # => can be used to simply pass draws and keep rng's isolated on agent obj
+        # => harvest draw 
+        # => 2 movement draws (move success, move distance) 
+        #           # => need to be integrated to get distance traveled / fields crossed 
+                    #    as of now, 100X100 world
+                    #    field size : 
+    
         pass
 
     def late_day_tick(self) -> None:
+        """
+        update state based on day ledger, which includes energy update, position update, etc.
+        """
         pass
 
 
-    def step(self) -> None:
-        ## entry point for day tick-level updates
-        pass
 
 
 
