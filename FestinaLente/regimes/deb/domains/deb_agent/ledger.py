@@ -1,5 +1,6 @@
 
 from dataclasses import dataclass
+from turtle import distance
 
 
 from FestinaLente.core.fluxes.agent_flux import AgentFluxes
@@ -25,6 +26,9 @@ class AgentDayLedger:
     movement_budget_per_tick_m: float
     movement_spent_J: float = 0.0
     movement_spent_m: float = 0.0
+
+    distance_traveled_m: float = 0.0
+    distance_traveled_fields: float = 0.0
 
     harvested_DM_kg: float = 0.0
     assimilated_J: float = 0.0
