@@ -46,12 +46,15 @@ class SheepAgentState:
 
     wet_weight_init: float
 
+    maturity_status: int = 0
+    # 0 = newborn, 1 = juvenile, 2 = adult
 
 
 
 
 
-def agent_state_init(agent_id : int, agent_taxon : SheepTaxon, filling_ratio: float, wet_mass_initiator : float|None = None) -> SheepAgentState:
+
+def agent_state_init(agent_id : int, agent_taxon : SheepTaxon, filling_ratio: float, wet_mass_initiator : float|None = None, maturity_status: int = 0) -> SheepAgentState:
     if filling_ratio < 0:
         raise ValueError("filling ratio must be >= 0 ")
     
@@ -148,6 +151,7 @@ def agent_state_init(agent_id : int, agent_taxon : SheepTaxon, filling_ratio: fl
         body_mass_kg=wet_mass_initiator/1000,
         wet_weight_init=wet_mass_initiator,
         alive=True,
+        maturity_status=maturity_status
     )
 
 

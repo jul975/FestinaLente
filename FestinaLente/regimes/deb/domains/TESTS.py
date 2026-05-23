@@ -1,13 +1,30 @@
 
 
+from FestinaLente.regimes.deb.domains.Test_agent_snap import AgentSnapshotT
+from FestinaLente.regimes.deb.domains.deb_agent.phases.growth import compute_growth
+from FestinaLente.regimes.deb.domains.deb_agent.phases.maintenance import SheepMaintenanceCosts
+from FestinaLente.regimes.deb.domains.deb_agent.phases.flux import SheepFluxes
+from FestinaLente.regimes.deb.domains.deb_agent.state import SheepAgentState, agent_state_init
+from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
 
 
-"""def test_reserve_increases_when_grass_is_available():
+from FestinaLente.regimes.deb.domains.agent_deb_test import TestAgentDay
+
+
+def test_reserve_increases_when_grass_is_available():
     ...
 
 
-def test_structure_increases_when_somatic_surplus_exists():
-    ...
+def test_structure_increases_when_somatic_surplus_exists() -> None:
+    agent = TestAgentDay()
+    before = AgentSnapshotT.from_agent(agent)
+    agent.early_day_tick()
+    agent.late_day_tick()
+    after = AgentSnapshotT.from_agent(agent)    
+    print(transition_report(before, after))
+
+    return None
+    
 
 
 def test_larger_sheep_has_larger_movement_cost():
@@ -31,15 +48,9 @@ def test_adult_reproduces_when_buffer_is_filled():
 
 
 def test_sheep_dies_when_costs_cannot_be_paid():
-    ..."""
+    ...
 
-from FestinaLente.regimes.deb.domains.Test_agent_snap import AgentSnapshotT
-from FestinaLente.regimes.deb.domains.deb_agent.phases.growth import compute_growth
-from FestinaLente.regimes.deb.domains.deb_agent.phases.maintenance import SheepMaintenanceCosts, compute_maintenance
-from FestinaLente.regimes.deb.domains.deb_agent.phases.flux import SheepFluxes, compute_fluxes
-from FestinaLente.regimes.deb.domains.deb_agent.cycle.agent_interaction_budget import InteractionBudget, InteractionBudget, compute_max_locomotion_distance_m, get_interaction_reserve
-from FestinaLente.regimes.deb.domains.deb_agent.state import SheepAgentState, agent_state_init
-from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
+
 
 
 def transition_report(before: AgentSnapshotT, after: AgentSnapshotT) -> str:
@@ -325,4 +336,5 @@ def test_agent_model(day_count : int = 1) -> None:
     
 
 if __name__ == "__main__":
-    test_agent_model(day_count=10)
+    #test_agent_model(day_count=10)
+    test_structure_increases_when_somatic_surplus_exists()

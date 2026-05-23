@@ -33,6 +33,9 @@ class TestAgentDay:
         self.state: SheepAgentState = state
         self.derived: AgentDerived = derived
 
+    def __str__(self) -> str:
+        return f"SheepAgentState( \n agent_id={self.state.agent_id}, \n age_d={self.state.age_d:.2f}, \n alive={self.state.alive}, \n E_J={self.state.E_J:.2f}, \n V_cm3={self.state.V_cm3:.2f}, \n E_H_J={self.state.E_H_J:.2f}, \n E_R_J={self.state.E_R_J:.2f}, \n body_mass_kg={self.state.body_mass_kg:.2f})"
+
     def early_day_tick(self) -> AgentDayLedger:
         """pre-movement energy update, which includes mobilization, branch split, maintenance, movement cost deduction, etc. Returns day ledger for the day tick."""
         self.day_ledger: AgentDayLedger = open_day_tick(
@@ -88,14 +91,33 @@ class TestAgentDay:
 
 
         self.state.V_cm3 = res.V_next_cm3
+        self.state.age_d += 1.0
+        #self.state.body_mass_kg = self.state.V_cm3 * self.derived.V_m_cm3 / 1000  # convert g to kg, assuming density of 1 g/cm3 for simplicity
 
         return None
 
 
 
+# in agent_deb_test.py — add to TestAgentDay
 
+    def snapshot(self, label: str, ledger: AgentDayLedger | None = None) -> None:
+        sep = f"── {label} "
+        print(sep + "─" * max(0, 60 - len(sep)))
+        print(f"  V={self.state.V_cm3:.4f} cm³  "
+            f"E={self.state.E_J:.1f} J  "
+            f"E_H={self.state.E_H_J:.1f} J  "
+            f"mass={self.state.body_mass_kg:.3f} kg")
+        if ledger:
+            print(f"  mobilized={ledger.mobilized_J:.1f} J  "
+                f"soma_surplus={ledger.soma_after_maintenance_J:.1f} J  "
+                f"maturity_surplus={ledger.maturity_after_maintenance_J:.1f} J")
+            print(f"  movement: budget={ledger.movement_budget_per_tick_m:.1f} m/tick  "
+                f"spent={ledger.movement_spent_m:.1f} m  ({ledger.movement_spent_J:.1f} J)")
+            if ledger.assimilated_J > 0:
+                print(f"  assimilated={ledger.assimilated_J:.1f} J  "
+                    f"harvested={ledger.harvested_DM_kg:.4f} kg DM")
 
-        
+            
 
 
 
@@ -107,22 +129,13 @@ if __name__ == "__main__":
         params=params
     )
 
-    day_ledger = testObj.early_day_tick()
-    print("After early day tick:")
-    print(day_ledger)
+    testObj.snapshot("INIT")
+
+    ledger = testObj.early_day_tick()
+    testObj.snapshot("AFTER OPEN TICK", ledger)
 
     testObj.day_tick()
-    print("After day tick:")
-    print(testObj.day_ledger)
+    testObj.snapshot("AFTER INTERACTION", testObj.day_ledger)
 
     testObj.late_day_tick()
-    print("After late day tick:")
-    print(testObj.state)
-    
-
-
-
-    
-
-
-
+    testObj.snapshot("AFTER CLOSE TICK", testObj.day_ledger)
