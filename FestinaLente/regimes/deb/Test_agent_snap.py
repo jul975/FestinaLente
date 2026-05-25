@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from FestinaLente.regimes.deb.domains.TESTS import AgentTest
+    from FestinaLente.regimes.deb.TESTS import AgentTest
 
 @dataclass(frozen=True)
 class AgentSnapshotT:

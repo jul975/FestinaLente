@@ -1,6 +1,6 @@
 
 
-from FestinaLente.regimes.deb.domains.Test_agent_snap import AgentSnapshotT
+from FestinaLente.regimes.deb.Test_agent_snap import AgentSnapshotT
 from FestinaLente.regimes.deb.domains.deb_agent.phases.growth import compute_growth
 from FestinaLente.regimes.deb.domains.deb_agent.phases.maintenance import SheepMaintenanceCosts
 from FestinaLente.regimes.deb.domains.deb_agent.phases.flux import SheepFluxes
@@ -8,7 +8,7 @@ from FestinaLente.regimes.deb.domains.deb_agent.state import SheepAgentState, ag
 from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
 
 
-from FestinaLente.regimes.deb.domains.agent_deb_test import TestAgentDay
+from FestinaLente.regimes.deb.agent_deb_test import TestAgentDay
 
 
 def test_reserve_increases_when_grass_is_available():
