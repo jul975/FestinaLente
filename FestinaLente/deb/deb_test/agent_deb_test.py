@@ -2,15 +2,14 @@
 #                   AGENT DEB TEST
 #########################################################
 import numpy
-import test
 
-from FestinaLente.regimes.deb.domains.deb_agent.cycle.day_open_tick import open_day_tick
-from FestinaLente.regimes.deb.domains.deb_agent.derived import AgentDerived
-from FestinaLente.regimes.deb.domains.deb_agent.ledger import AgentDayLedger
-from FestinaLente.regimes.deb.domains.deb_agent.phases.growth import SheepGrowthResult, compute_growth
-from FestinaLente.regimes.deb.domains.deb_agent.phases.movement import compute_locomotion_cost
-from FestinaLente.regimes.deb.domains.deb_agent.state import SheepAgentState, agent_state_init
-from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
+from FestinaLente.deb.domains.deb_agent.cycle.day_open_tick import open_day_tick
+from FestinaLente.deb.domains.deb_agent.derived import AgentDerived
+from FestinaLente.deb.domains.deb_agent.ledger import AgentDayLedger
+from FestinaLente.deb.domains.deb_agent.phases.growth import SheepGrowthResult, compute_growth
+from FestinaLente.deb.domains.deb_agent.phases.movement import compute_locomotion_cost
+from FestinaLente.deb.domains.deb_agent.state import SheepAgentState, agent_state_init
+from FestinaLente.empirical_data.sheep import SheepTaxon
 
 
 
@@ -95,11 +94,6 @@ class TestAgentDay:
         #self.state.body_mass_kg = self.state.V_cm3 * self.derived.V_m_cm3 / 1000  # convert g to kg, assuming density of 1 g/cm3 for simplicity
 
         return None
-
-
-
-# in agent_deb_test.py — add to TestAgentDay
-
     def snapshot(self, label: str, ledger: AgentDayLedger | None = None) -> None:
         sep = f"── {label} "
         print(sep + "─" * max(0, 60 - len(sep)))
@@ -116,10 +110,6 @@ class TestAgentDay:
             if ledger.assimilated_J > 0:
                 print(f"  assimilated={ledger.assimilated_J:.1f} J  "
                     f"harvested={ledger.harvested_DM_kg:.4f} kg DM")
-
-            
-
-
 
 
 if __name__ == "__main__":

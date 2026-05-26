@@ -1,14 +1,14 @@
 
 
-from FestinaLente.regimes.deb.Test_agent_snap import AgentSnapshotT
-from FestinaLente.regimes.deb.domains.deb_agent.phases.growth import compute_growth
-from FestinaLente.regimes.deb.domains.deb_agent.phases.maintenance import SheepMaintenanceCosts
-from FestinaLente.regimes.deb.domains.deb_agent.phases.flux import SheepFluxes
-from FestinaLente.regimes.deb.domains.deb_agent.state import SheepAgentState, agent_state_init
-from FestinaLente.regimes.deb.taxon_registery.sheep import SheepTaxon
+from FestinaLente.deb.deb_test.Test_agent_snap import AgentSnapshotT
+from FestinaLente.deb.domains.deb_agent.phases.growth import compute_growth
+from FestinaLente.deb.domains.deb_agent.phases.maintenance import SheepMaintenanceCosts
+from FestinaLente.deb.deb_flux import SheepFluxes
+from FestinaLente.deb.domains.deb_agent.state import SheepAgentState, agent_state_init
+from FestinaLente.empirical_data.sheep import SheepTaxon
 
 
-from FestinaLente.regimes.deb.agent_deb_test import TestAgentDay
+from FestinaLente.deb.deb_test.agent_deb_test import TestAgentDay
 
 
 def test_reserve_increases_when_grass_is_available():
@@ -16,7 +16,7 @@ def test_reserve_increases_when_grass_is_available():
 
 
 def test_structure_increases_when_somatic_surplus_exists() -> None:
-    agent = TestAgentDay()
+    agent = TestAgentDay(agent_id=1, params=SheepTaxon())
     before = AgentSnapshotT.from_agent(agent)
     agent.early_day_tick()
     agent.late_day_tick()

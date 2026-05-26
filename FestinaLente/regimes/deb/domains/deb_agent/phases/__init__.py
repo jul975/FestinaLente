@@ -1,4 +1,0 @@
-"""
-Biological equation module
-
-"""

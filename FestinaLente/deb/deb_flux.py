@@ -1,18 +1,13 @@
-
-
-
 from dataclasses import dataclass
 
 from FestinaLente.empirical_data.sheep import SheepTaxon
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from FestinaLente.deb.deb_agent import SheepAgent
     from FestinaLente.deb.deb_state import SheepAgentState
 
-
 @dataclass(frozen=True)
-class AgentFluxes:
+class SheepFluxes:
     """
     Tick-level energy fluxes.
 
@@ -52,6 +47,7 @@ class AgentFluxes:
     # Formula scaffold: A = kap_X * harvested_food_energy_J
 
 
+###################################
 
 
 def compute_fluxes(
@@ -59,21 +55,24 @@ def compute_fluxes(
     taxon: SheepTaxon,
     assimilation_J: float,
     dt_d: float,
-) -> AgentFluxes:
+) -> SheepFluxes:
     V_safe = max(state.V_cm3, taxon.V_min_cm3)
     L_cm = V_safe ** (1.0 / 3.0)
 
-    body_mass_kg = max(
-        V_safe / 1000.0,
+    body_mass_kg: float = max(
+        state.body_mass_kg,
         taxon.min_body_mass_kg,
     )
 
     p_C = max(state.E_J * taxon.v_cm_per_d / L_cm, 0.0)
-    mobilized_J = min(state.E_J, p_C * dt_d)
-    soma_budget_J = taxon.kappa * mobilized_J
-    maturity_repro_budget_J = (1.0 - taxon.kappa) * mobilized_J
+    mobilized_J: float = min(state.E_J, p_C * dt_d)
 
-    return AgentFluxes(
+    state.E_J -= mobilized_J
+
+    soma_budget_J: float = taxon.kappa * mobilized_J
+    maturity_repro_budget_J: float = (1.0 - taxon.kappa) * mobilized_J
+
+    return SheepFluxes(
         dt_d=dt_d,
         L_cm=L_cm,
         body_mass_kg=body_mass_kg,

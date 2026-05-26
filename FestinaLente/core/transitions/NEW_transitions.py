@@ -6,7 +6,7 @@
 
 from dataclasses import dataclass
 
-from FestinaLente.regimes.deb.domains.deb_agent.phases.flux import daily_somatic_maintenance_J, somatic_maintenance_J
+from FestinaLente.deb.deb_flux import daily_somatic_maintenance_J, somatic_maintenance_J
 from FestinaLente.regimes.deb.domains.deb_agent.agent_phases import BranchBudget, MaintenanceResult, MobilizationResult, begin_day_energy_phase, branch_split_phase, maintenance_phase
 
 
