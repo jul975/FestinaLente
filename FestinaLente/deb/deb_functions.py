@@ -69,8 +69,8 @@ def compute_growth(
 
 #########################################################
 
-
-
+# NOTE: 
+# speed per time unit or change interval per day sub-unit, e.g. cm/d, cm/h, etc. 
 def compute_locomotion_cost(
     distance_m: float,
     gradient_degrees: float,

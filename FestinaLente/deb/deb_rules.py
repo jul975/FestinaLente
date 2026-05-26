@@ -162,10 +162,67 @@ class DayCloseTickReport:
 
 
 ##############################################################################
+# INTERACTION RULES
+##############################################################################
+
+@dataclass
+class TickInteractionRapport(frozen=True):
+    """ represents the interaction for an agent in a single interaction tick, to be applied at the end of the day """
+    sim_day: int
+    interaction_index: int
+    # agent_id: int
+    distance_m: float = 0.0
+    movement_cost_J: float = 0.0
+    harvested_DM_kg: float = 0.0
+    assimilated_J: float = 0.0
 
 
+@dataclass
+class DayInteractionRapport:
+    """ represents the total interaction for an agent across all interaction ticks in a day, to be applied at the end of the day """
+    sim_day: int
+    interaction_ticks_total: int
+    # agent_id: int
 
+    total_distance_m: float = 0.0
+    total_movement_cost_J: float = 0.0
+    total_harvested_DM_kg: float = 0.0
+    total_assimilated_J: float = 0.0
 
+    @property
+    def add_interaction_rapport(self, tick_rapport: TickInteractionRapport) -> None:
+
+        #self.sim_day = tick_rapport.sim_day
+        self.interaction_ticks_total = self.interaction_ticks_total + 1
+
+        self.total_distance_m=self.total_distance_m + tick_rapport.distance_m,
+        self.total_movement_cost_J=self.total_movement_cost_J + tick_rapport.movement_cost_J,
+        self.total_harvested_DM_kg=self.total_harvested_DM_kg + tick_rapport.harvested_DM_kg,
+        self.total_assimilated_J=self.total_assimilated_J + tick_rapport.assimilated_J
+
+    
+# need print prop
+
+def agent_movement_interaction(
+    agent: "SheepAgent",
+    tick_rapport: TickInteractionRapport,
+) -> TickInteractionRapport:
+    """ perform movement interaction for the agent, update the tick rapport with movement cost and distance traveled, and return the updated rapport """
+    # NOTE: this is a placeholder implementation, to be replaced with actual movement logic and cost calculation
+
+    distance_m = 10.0  # placeholder for distance traveled in this interaction tick
+    gradient_degrees = 5.0  # placeholder for terrain gradient in degrees
+    speed_m_per_min = 0.5  # placeholder for movement speed in m/min
+
+    locomotion_cost_spec = LocomotionCostSpec()
+    movement_cost_J_per_kg_m = brockway_boyne_c_transport(gradient_degrees, speed_m_per_min)
+
+    movement_cost_J = movement_cost_J_per_kg_m * agent.state.body_mass_kg * distance_m
+
+    tick_rapport.distance_m = distance_m
+    tick_rapport.movement_cost_J = movement_cost_J
+
+    return tick_rapport
 
 
 

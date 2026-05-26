@@ -165,6 +165,12 @@ class SheepAgent():
 
 
     def start_of_day_tick(self, biological_day: int, assimilation_J: float = 0, dt_d: float = 4.0) -> None:
+        """
+        instance attributes are being updated in place downstream
+        - fetch fluxes and create day ledger
+        - perform maintenance and update day ledger accordingly
+
+        """
 
         self.fetch_fluxes_ledger(assimilation_J=assimilation_J, dt_d=dt_d)
         self.fetch_new_ledger(biological_day=biological_day)
@@ -177,6 +183,13 @@ class SheepAgent():
 
     def interaction_tick(self) -> None:
         ## add simular logic, need to mimic start of day, passing reports and ledgers between ticks. 
+        if not hasattr(self, "day_ledger"):
+            raise ValueError("Day ledger must be created before performing interaction tick.")
+        if not hasattr(self, "day_fluxes"):
+            raise ValueError("Fluxes must be computed before performing interaction tick.")
+        if not hasattr(self, "derived"):
+            raise ValueError("Derived parameters must be computed before performing interaction tick.")
+        
         pass
     # 3. end of day tick: apply growth, maturity, reproduction, and death based on day ledger
 
