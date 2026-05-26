@@ -3,13 +3,17 @@ Object that owns state and delegates behavior
 
 """
 
+import numpy as np
+from numpy.random import Generator
+
+from FestinaLente.deb.deb_rules import MaintenanceCostsLedger, compute_maintenance
 from FestinaLente.deb.deb_state import AgentDerived, SheepAgentState, agent_state_init, derive_sheep_taxon
 from FestinaLente.empirical_data.sheep import SheepTaxon
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from FestinaLente.deb.deb_ledger import AgentDayLedger
-    from FestinaLente.deb.deb_flux import SheepFluxes
+    from FestinaLente.deb.deb_flux import FluxesLedger
 
 
 class AnimalSpecies:
@@ -80,6 +84,9 @@ class SheepAgent():
     def __init__(self, agent_id: int, species_obj : AnimalSpecies) -> None:
         self.agent_id: int = agent_id
 
+        # temp
+        self.rng : np.random.SeedSequence = np.random.SeedSequence(entropy=agent_id)  # for now, we can use the agent ID as the seed for the random number generator. This will ensure that each agent has a unique and deterministic RNG sequence based on its ID. In the future, we can expand this to support more complex seeding strategies if needed.
+
         self.species_obj: AnimalSpecies = species_obj
 
         self.position: tuple[float, float] = (0.0, 0.0)
@@ -96,6 +103,11 @@ class SheepAgent():
         self.derived: AgentDerived = species_obj.derived
         self.taxon: SheepTaxon = species_obj.taxon
 
+    def test_rng(self) -> None:
+        print(f"Testing RNG for agent {self.agent_id} with seed {self.rng.entropy}")
+        rng: Generator = np.random.default_rng(self.rng)
+        print("Random numbers: ", rng.random(5))
+
     def params_describe(self) -> None:
         print(f"--- SheepAgent (id={self.agent_id}) ---")
         print("State: ")
@@ -105,16 +117,21 @@ class SheepAgent():
         print("Position: ")
         print(self.position)
 
-    def fetch_fluxes(self, assimilation_J: float, dt_d: float = 4.0) -> None:
+    def fetch_fluxes_ledger(self, assimilation_J: float = 0, dt_d: float = 4.0) -> None:
+        ''' compute fluxes and store in day_fluxes attribute 
+        attributes: 
+        - assimilation_J: energy assimilated during the day, in Joules. This is an input to the flux computation, and can be set based on the agent's foraging behavior and the environment. For now, we can set it to 0 and focus on the mobilization and budget split fluxes.
+        - dt_d: time step for the flux computation, in days. This can be set to 1 for daily fluxes, or a fraction of a day for sub-daily fluxes. For now, we can set it to 4.0 to represent 4 days, which will allow us to see more significant changes in the fluxes and make it easier to debug and understand the model dynamics.
+        '''
         from FestinaLente.deb.deb_flux import compute_fluxes
-        self.day_fluxes: "SheepFluxes" = compute_fluxes(
+        self.day_fluxes: "FluxesLedger" = compute_fluxes(
             state=self.state,
             taxon=self.taxon,
             assimilation_J=assimilation_J,
             dt_d=dt_d
         )
 
-    def fetch_ledger(self, biological_day: int) -> None:
+    def fetch_new_ledger(self, biological_day: int) -> None:
         if not hasattr(self, "day_fluxes"):
             raise ValueError("Fluxes must be computed before fetching ledger.")
         
@@ -127,7 +144,40 @@ class SheepAgent():
         )
     
     # 1. start of day tick: fetch fluxes and create day ledger, perform maintenance and update day ledger accordingly
+
+    def perform_maintenance(self) -> MaintenanceCostsLedger:
+        if not hasattr(self, "day_ledger"):
+            raise ValueError("Day ledger must be created before performing maintenance.")
+        
+        maintenance_ledger: MaintenanceCostsLedger = compute_maintenance(
+            state=self.state,
+            taxon=self.taxon,
+            fluxes=self.day_fluxes
+        )
+        self.day_ledger.soma_after_maintenance_J = max(self.day_fluxes.soma_budget_J - maintenance_ledger.somatic_maintenance_J, 0)
+        self.day_ledger.maturity_after_maintenance_J = max(self.day_fluxes.maturity_repro_budget_J - maintenance_ledger.maturity_maintenance_due_J, 0)
+        return maintenance_ledger
+
+        # # apply maintenance costs to the day ledger
+        # self.day_ledger.soma_after_maintenance_J = max(self.day_fluxes.soma_budget_J - self.day_fluxes.p_C_J_per_d, 0)
+        # self.day_ledger.maturity_after_maintenance_J = max(self.day_fluxes.maturity_repro_budget_J - (1 - self.taxon.kappa) * self.day_fluxes.p_C_J_per_d, 0)
+        # ## temp 
+
+
+    def start_of_day_tick(self, biological_day: int, assimilation_J: float = 0, dt_d: float = 4.0) -> None:
+
+        self.fetch_fluxes_ledger(assimilation_J=assimilation_J, dt_d=dt_d)
+        self.fetch_new_ledger(biological_day=biological_day)
+        self.perform_maintenance()
+
+        # needs to create interaction ledger ready for the day!. 
+
+
     # 2. interaction tick: perform movement, harvest and interactions, update day ledger accordingly
+
+    def interaction_tick(self) -> None:
+        ## add simular logic, need to mimic start of day, passing reports and ledgers between ticks. 
+        pass
     # 3. end of day tick: apply growth, maturity, reproduction, and death based on day ledger
 
 
@@ -136,18 +186,16 @@ class SheepAgent():
 
 
 if __name__ == "__main__":
-    print("Testing sheep agent:")
-    sheep_species = AnimalSpecies(taxon="sheep")
-    sheep_species.create_agent_series(num_agents=3)
-    print(f"Total sheep count: {sheep_species.check_agent_count()}")
-
-
-    agent_1 = sheep_species.instance_dict[1]
-    agent_1.fetch_fluxes(assimilation_J=1000.0, dt_d=4.0)
-    print(f"Agent 1 fluxes: ")
-    print(agent_1.day_fluxes)
+    species = AnimalSpecies(taxon="sheep")
+    species.create_agent_series(num_agents=3)
+    
+    test_agent: SheepAgent = species.instance_dict[1]
+    test_agent.test_rng()
     print("\n")
+    test_agent.test_rng()
 
-    agent_1.fetch_ledger(biological_day=1)
-    print(f"Agent 1 day ledger: ")
-    agent_1.day_ledger.print_summary()
+    test_2_agent: SheepAgent = species.instance_dict[2]
+    test_2_agent.test_rng()
+    print("\n")
+    test_2_agent.test_rng()
+    print("\n")

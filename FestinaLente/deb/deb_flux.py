@@ -6,8 +6,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from FestinaLente.deb.deb_state import SheepAgentState
 
+
+
 @dataclass(frozen=True)
-class SheepFluxes:
+class FluxesLedger:
     """
     Tick-level energy fluxes.
 
@@ -19,33 +21,55 @@ class SheepFluxes:
     dt_d: float
 
     L_cm: float
-    # cm.
-    # Formula: L = max(V, V_min)^(1/3)
-
     body_mass_kg: float
-    # kg.
-    # Approx wet mass used for movement.
 
     p_C_J_per_d: float
-    # J / day.
-    # Formula: p_C = E * v / L
-
     mobilized_J: float
-    # J.
-    # Formula: M = min(E, p_C * dt)
-
     soma_budget_J: float
-    # J.
-    # Formula: B_S = kappa * mobilized_J
-
     maturity_repro_budget_J: float
-    # J.
-    # Formula: B_H = (1 - kappa) * mobilized_J
-
     assimilation_J: float
-    # J.
-    # Formula scaffold: A = kap_X * harvested_food_energy_J
 
+    @staticmethod
+    def _fmt_J(value: float) -> str:
+        """Format energy amounts in readable J/kJ/MJ units."""
+        abs_value = abs(value)
+
+        if abs_value >= 1_000_000:
+            return f"{value / 1_000_000:.3f} MJ"
+        if abs_value >= 1_000:
+            return f"{value / 1_000:.3f} kJ"
+        return f"{value:.2f} J"
+
+    @staticmethod
+    def _fmt_rate_J_per_d(value: float) -> str:
+        """Format energy flux rates in readable J/d, kJ/d, or MJ/d."""
+        abs_value = abs(value)
+
+        if abs_value >= 1_000_000:
+            return f"{value / 1_000_000:.3f} MJ/d"
+        if abs_value >= 1_000:
+            return f"{value / 1_000:.3f} kJ/d"
+        return f"{value:.2f} J/d"
+
+    def __str__(self) -> str:
+        return (
+            "FluxesLedger\n"
+            "------------\n"
+            f"dt:                     {self.dt_d:.4f} d\n"
+            f"structural length:      {self.L_cm:.3f} cm\n"
+            f"body mass:              {self.body_mass_kg:.3f} kg\n"
+            "\n"
+            "Mobilization\n"
+            f"  p_C:                  {self._fmt_rate_J_per_d(self.p_C_J_per_d)}\n"
+            f"  mobilized:            {self._fmt_J(self.mobilized_J)}\n"
+            "\n"
+            "Budget split\n"
+            f"  soma budget:          {self._fmt_J(self.soma_budget_J)}\n"
+            f"  maturity/repro budget:{self._fmt_J(self.maturity_repro_budget_J)}\n"
+            "\n"
+            "Assimilation\n"
+            f"  assimilated:          {self._fmt_J(self.assimilation_J)}"
+        )
 
 ###################################
 
@@ -55,7 +79,7 @@ def compute_fluxes(
     taxon: SheepTaxon,
     assimilation_J: float,
     dt_d: float,
-) -> SheepFluxes:
+) -> FluxesLedger:
     V_safe = max(state.V_cm3, taxon.V_min_cm3)
     L_cm = V_safe ** (1.0 / 3.0)
 
@@ -72,7 +96,7 @@ def compute_fluxes(
     soma_budget_J: float = taxon.kappa * mobilized_J
     maturity_repro_budget_J: float = (1.0 - taxon.kappa) * mobilized_J
 
-    return SheepFluxes(
+    return FluxesLedger(
         dt_d=dt_d,
         L_cm=L_cm,
         body_mass_kg=body_mass_kg,
