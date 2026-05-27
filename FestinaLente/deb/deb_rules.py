@@ -66,7 +66,7 @@ class MaintenanceCostsLedger:
 def compute_maintenance(
             taxon : 'SheepTaxon', 
             state : 'SheepAgentState' ,
-            fluxes : AgentFluxes, 
+            fluxes : 'AgentFluxes', 
             dt: float = 1.0 
             ) -> MaintenanceCostsLedger:
         """ compute maintenance costs and deficits for the current tick, given the agent state, taxon parameters, and available fluxes for the tick.        
@@ -165,8 +165,8 @@ class DayCloseTickReport:
 # INTERACTION RULES
 ##############################################################################
 
-@dataclass
-class TickInteractionRapport(frozen=True):
+@dataclass(frozen=True)
+class TickInteractionRapport:
     """ represents the interaction for an agent in a single interaction tick, to be applied at the end of the day """
     sim_day: int
     interaction_index: int

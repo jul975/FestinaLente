@@ -1,10 +1,11 @@
 """ 
 Object that owns state and delegates behavior
 
+on engine level clock obj keeping track of tick calls 
+
 """
 
 import numpy as np
-from numpy.random import Generator
 
 from FestinaLente.deb.deb_rules import MaintenanceCostsLedger, compute_maintenance
 from FestinaLente.deb.deb_state import AgentDerived, SheepAgentState, agent_state_init, derive_sheep_taxon
@@ -43,7 +44,7 @@ class AnimalSpecies:
 
     def create_agent_series(self, num_agents: int) -> int:
 
-        for i in range(num_agents):
+        for _ in range(num_agents):
             agent_id = self.count + 1  # generate a new agent ID
             print("")
             print(f"Creating agent with ID: {agent_id}")
@@ -82,14 +83,16 @@ class SheepAgent():
     '''
 
     def __init__(self, agent_id: int, species_obj : AnimalSpecies) -> None:
+
+
         self.agent_id: int = agent_id
-
-        # temp
-        self.rng : np.random.SeedSequence = np.random.SeedSequence(entropy=agent_id)  # for now, we can use the agent ID as the seed for the random number generator. This will ensure that each agent has a unique and deterministic RNG sequence based on its ID. In the future, we can expand this to support more complex seeding strategies if needed.
-
         self.species_obj: AnimalSpecies = species_obj
-
+        
+        # temp
+        self.sequence : np.random.SeedSequence = np.random.SeedSequence(entropy=agent_id)  # for now, we can use the agent ID as the seed for the random number generator. This will ensure that each agent has a unique and deterministic RNG sequence based on its ID. In the future, we can expand this to support more complex seeding strategies if needed.
+        self.rng : np.random.default_rng = np.random.default_rng(self.sequence)
         self.position: tuple[float, float] = (0.0, 0.0)
+
 
         self.state: SheepAgentState  = agent_state_init(
             agent_id=agent_id,
@@ -104,9 +107,9 @@ class SheepAgent():
         self.taxon: SheepTaxon = species_obj.taxon
 
     def test_rng(self) -> None:
-        print(f"Testing RNG for agent {self.agent_id} with seed {self.rng.entropy}")
-        rng: Generator = np.random.default_rng(self.rng)
-        print("Random numbers: ", rng.random(5))
+        print(f"Testing RNG for agent {self.agent_id} with seed {self.agent_id}")
+        
+        print("Random numbers: ", self.rng.random(5))
 
     def params_describe(self) -> None:
         print(f"--- SheepAgent (id={self.agent_id}) ---")
@@ -182,7 +185,7 @@ class SheepAgent():
     # 2. interaction tick: perform movement, harvest and interactions, update day ledger accordingly
 
     def interaction_tick(self) -> None:
-        ## add simular logic, need to mimic start of day, passing reports and ledgers between ticks. 
+        ## add similar logic, need to mimic start of day, passing reports and ledgers between ticks. 
         if not hasattr(self, "day_ledger"):
             raise ValueError("Day ledger must be created before performing interaction tick.")
         if not hasattr(self, "day_fluxes"):
@@ -191,6 +194,8 @@ class SheepAgent():
             raise ValueError("Derived parameters must be computed before performing interaction tick.")
         
         pass
+
+    
     # 3. end of day tick: apply growth, maturity, reproduction, and death based on day ledger
 
 
