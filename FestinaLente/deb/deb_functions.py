@@ -78,6 +78,7 @@ def compute_locomotion_cost(
     body_mass_kg: float,
 ) -> float:
     """ compute locomotion cost in Joules for a given movement """
+    
     c_transport_J_per_kg_m = brockway_boyne_c_transport(
         gradient_degrees=gradient_degrees,
         speed_m_per_min=speed_m_per_min

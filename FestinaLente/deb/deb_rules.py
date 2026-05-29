@@ -1,4 +1,9 @@
+"""
+Rules defined by rapport output as anchor point
 
+Each dataclass rapport obj is a closed interaction sub system that has a clear definition of the logic 
+
+"""
 from dataclasses import dataclass
 
 from typing import TYPE_CHECKING
@@ -28,71 +33,7 @@ v / L = reserve turnover/conductance rate, 1/day
 
 
 
-@dataclass(frozen=True)
-class MaintenanceCostsLedger:
-    """
-    Tick-level maintenance accounting.
 
-    Maintenance has priority over growth and maturation.
-    """
-
-
-    somatic_maintenance_due_J: float
-    # Formula: C_S = [p_M] * V * dt
-
-    somatic_maintenance_paid_J: float
-    # Formula: min(B_S, C_S)
-
-    somatic_deficit_J: float
-    # Formula: max(C_S - B_S, 0)
-
-    soma_surplus_after_maintenance_J: float
-    # Formula: max(B_S - C_S, 0)
-    
-
-
-    maturity_maintenance_due_J: float
-    # Formula: C_J = k_J * E_H * dt
-
-    maturity_maintenance_paid_J: float
-    # Formula: min(B_H, C_J)
-
-    maturity_deficit_J: float
-    # Formula: max(C_J - B_H, 0)
-
-    maturity_surplus_after_maintenance_J: float
-    # Formula: max(B_H - C_J, 0)
-
-def compute_maintenance(
-            taxon : 'SheepTaxon', 
-            state : 'SheepAgentState' ,
-            fluxes : 'AgentFluxes', 
-            dt: float = 1.0 
-            ) -> MaintenanceCostsLedger:
-        """ compute maintenance costs and deficits for the current tick, given the agent state, taxon parameters, and available fluxes for the tick.        
-            somatic maintenance => cost of maintaining existing structure 
-                depends on how much structure there is (V) and how costly it is to maintain per unit of structure (p_M)
-            maturity maintenance => cost of maintaining maturity level 
-                depends on how much maturity there is (E_H) and how costly it is to maintain per unit of maturity (k_J)
-            """
-        
-        somatic_maintenance: float = taxon.p_M_J_per_d_cm3 * state.V_cm3 * dt
-        c_j: float = taxon.k_J_per_d * state.E_H_J *dt
-
-        return MaintenanceCostsLedger(
-            somatic_maintenance_due_J=somatic_maintenance,
-            somatic_maintenance_paid_J=min(somatic_maintenance, fluxes.soma_budget_J),
-            somatic_deficit_J=max(somatic_maintenance-fluxes.soma_budget_J, 0),
-            soma_surplus_after_maintenance_J=max(fluxes.soma_budget_J - somatic_maintenance, 0),
-
-            maturity_maintenance_due_J= c_j,
-            maturity_maintenance_paid_J=min(c_j, fluxes.maturity_repro_budget_J),
-            maturity_deficit_J=max(c_j-fluxes.maturity_repro_budget_J, 0),
-            maturity_surplus_after_maintenance_J=max(fluxes.maturity_repro_budget_J-c_j, 0)
-
-
-
-        )
 
 ##############################################################################
 
@@ -104,6 +45,8 @@ class LocomotionCostSpec:
     source: str = "Brockway_Boyne_1980_sheep"
     mode: str = "scalar_fallback"  # or "slope_speed_regression"
     baseline_c_transport_J_per_kg_m: float = 2.35
+    # terrain_factor = 1.0   -> flat/open reference movement
+    # terrain_factor ≈ 2.0–2.5 -> rugged mountain-like movement
 
 
 
@@ -127,36 +70,36 @@ def brockway_boyne_c_transport(
 
 
 
-@dataclass(frozen=True)
-class DayOpenTickReport:
-    biological_day: int
-    n_agents_processed: int
-    total_mobilized_J: float
-    total_somatic_maintenance_due_J: float
-    total_somatic_maintenance_paid_J: float
-    total_maturity_maintenance_due_J: float
-    total_maturity_maintenance_paid_J: float
+# @dataclass(frozen=True)
+# class DayOpenTickReport:
+#     biological_day: int
+#     n_agents_processed: int
+#     total_mobilized_J: float
+#     total_somatic_maintenance_due_J: float
+#     total_somatic_maintenance_paid_J: float
+#     total_maturity_maintenance_due_J: float
+#     total_maturity_maintenance_paid_J: float
 
 
-@dataclass(frozen=True)
-class InteractionTickReport:
-    biological_day: int
-    interaction_index: int
-    n_agents_processed: int
-    total_distance_m: float
-    total_movement_cost_J: float
-    total_harvested_DM_kg: float
-    total_assimilated_J: float
+# @dataclass(frozen=True)
+# class InteractionTickReport:
+#     biological_day: int
+#     interaction_index: int
+#     n_agents_processed: int
+#     total_distance_m: float
+#     total_movement_cost_J: float
+#     total_harvested_DM_kg: float
+#     total_assimilated_J: float
 
 
-@dataclass(frozen=True)
-class DayCloseTickReport:
-    biological_day: int
-    n_agents_processed: int
-    total_growth_dV_cm3: float
-    total_maturity_gain_J: float
-    births: int
-    deaths: int
+# @dataclass(frozen=True)
+# class DayCloseTickReport:
+#     biological_day: int
+#     n_agents_processed: int
+#     total_growth_dV_cm3: float
+#     total_maturity_gain_J: float
+#     births: int
+#     deaths: int
 
 
 
@@ -175,6 +118,18 @@ class TickInteractionRapport:
     movement_cost_J: float = 0.0
     harvested_DM_kg: float = 0.0
     assimilated_J: float = 0.0
+
+def compute_movement_interaction(
+        sim_day: int,
+        interaction_index: int,
+        agent: "SheepAgent",
+) -> None:
+    """ PERFORM movement interaction for the agent, update the tick rapport with movement cost and distance traveled, and return the updated rapport """
+    # NOTE: this is a placeholder implementation, to be replaced with actual movement logic and cost calculation
+    max_distance: float = agent.day_ledger.movement_budget_per_tick_m
+    
+    print(f"Agent {agent.agent_id} - Interaction {interaction_index} - Max movement distance: {max_distance:.2f} m")
+
 
 
 @dataclass
@@ -215,9 +170,9 @@ def agent_movement_interaction(
     speed_m_per_min = 0.5  # placeholder for movement speed in m/min
 
     locomotion_cost_spec = LocomotionCostSpec()
-    movement_cost_J_per_kg_m = brockway_boyne_c_transport(gradient_degrees, speed_m_per_min)
+    movement_cost_J_per_kg_m: float = brockway_boyne_c_transport(gradient_degrees, speed_m_per_min)
 
-    movement_cost_J = movement_cost_J_per_kg_m * agent.state.body_mass_kg * distance_m
+    movement_cost_J: float = movement_cost_J_per_kg_m * agent.state.body_mass_kg * distance_m
 
     tick_rapport.distance_m = distance_m
     tick_rapport.movement_cost_J = movement_cost_J

@@ -7,7 +7,7 @@ on engine level clock obj keeping track of tick calls
 
 import numpy as np
 
-from FestinaLente.deb.deb_rules import MaintenanceCostsLedger, compute_maintenance
+from FestinaLente.deb.deb_rules import MaintenanceCostsLedger, compute_maintenance, compute_movement_interaction
 from FestinaLente.deb.deb_state import AgentDerived, SheepAgentState, agent_state_init, derive_sheep_taxon
 from FestinaLente.empirical_data.sheep import SheepTaxon
 
@@ -41,6 +41,11 @@ class AnimalSpecies:
         self.count += 1
         return SheepAgent(agent_id=agent_id, species_obj=self)
     
+    def compute_max_movement_cost(self):
+        """
+        D_{max,t}=S_t/(c_{transport}M_t\tau)
+        """
+        
 
     def create_agent_series(self, num_agents: int) -> int:
 
@@ -90,7 +95,7 @@ class SheepAgent():
         
         # temp
         self.sequence : np.random.SeedSequence = np.random.SeedSequence(entropy=agent_id)  # for now, we can use the agent ID as the seed for the random number generator. This will ensure that each agent has a unique and deterministic RNG sequence based on its ID. In the future, we can expand this to support more complex seeding strategies if needed.
-        self.rng : np.random.default_rng = np.random.default_rng(self.sequence)
+        self.rng : np.random.Generator = np.random.default_rng(self.sequence)
         self.position: tuple[float, float] = (0.0, 0.0)
 
 
@@ -157,7 +162,7 @@ class SheepAgent():
             taxon=self.taxon,
             fluxes=self.day_fluxes
         )
-        self.day_ledger.soma_after_maintenance_J = max(self.day_fluxes.soma_budget_J - maintenance_ledger.somatic_maintenance_J, 0)
+        self.day_ledger.soma_after_maintenance_J = max(self.day_fluxes.soma_budget_J - maintenance_ledger.somatic_maintenance_due_J, 0)
         self.day_ledger.maturity_after_maintenance_J = max(self.day_fluxes.maturity_repro_budget_J - maintenance_ledger.maturity_maintenance_due_J, 0)
         return maintenance_ledger
 
@@ -184,7 +189,7 @@ class SheepAgent():
 
     # 2. interaction tick: perform movement, harvest and interactions, update day ledger accordingly
 
-    def interaction_tick(self) -> None:
+    def interaction_tick(self, sim_day, interaction_index ) -> None:
         ## add similar logic, need to mimic start of day, passing reports and ledgers between ticks. 
         if not hasattr(self, "day_ledger"):
             raise ValueError("Day ledger must be created before performing interaction tick.")
@@ -193,17 +198,18 @@ class SheepAgent():
         if not hasattr(self, "derived"):
             raise ValueError("Derived parameters must be computed before performing interaction tick.")
         
-        pass
+        compute_movement_interaction(
+            agent=self,
+            sim_day=sim_day,
+            interaction_index=interaction_index
+        )
 
     
     # 3. end of day tick: apply growth, maturity, reproduction, and death based on day ledger
 
 
 
-
-
-
-if __name__ == "__main__":
+def testing_function() -> None:
     species = AnimalSpecies(taxon="sheep")
     species.create_agent_series(num_agents=3)
     
@@ -217,3 +223,41 @@ if __name__ == "__main__":
     print("\n")
     test_2_agent.test_rng()
     print("\n")
+
+def testing_interaction_loop(agent_count: int = 1, 
+                             n_sim_days: int = 1, 
+                             n_dt_day : int = 4
+                             ) -> None:
+    
+    species = AnimalSpecies(taxon="sheep")
+    species.create_agent_series(num_agents=agent_count)
+
+    for sim_day in range(1, n_sim_days + 1):
+        print(f"--- Simulation Day {sim_day} ---")
+        for agent_id, agent in species.instance_dict.items():
+            print(f"\n--- Agent ID: {agent_id} ---")
+            agent.start_of_day_tick(biological_day=sim_day, assimilation_J=1000, dt_d=n_dt_day)
+            agent.day_ledger.print_summary()
+
+        for dt in range(1, n_dt_day + 1):
+            print(f"\n--- Simulation Day {sim_day} - Time Step {dt} ---")
+            for agent_id, agent in species.instance_dict.items():
+                print(f"\n--- Agent ID: {agent_id} ---")
+                agent.interaction_tick(
+                    sim_day=sim_day,
+                    interaction_index=dt
+                )
+
+"""
+    species = AnimalSpecies(taxon="sheep")
+    species.create_agent_series(num_agents=3)
+    agent_1: SheepAgent = species.instance_dict[1]
+    agent_1.start_of_day_tick(biological_day=1, assimilation_J=1000, dt_d=4.0)
+    agent_1.day_ledger.print_summary()
+    agent_1.interaction_tick()
+    agent_1.day_ledger.print_summary()
+"""
+
+if __name__ == "__main__":
+
+    testing_interaction_loop(agent_count=1, n_sim_days=1, n_dt_day=4)

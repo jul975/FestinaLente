@@ -116,6 +116,15 @@ class AgentDerived:
     # Ultimate structural volume.
     # Formula: V_i = L_i^3
 
+    movement_ratio: float
+    # adult_max_path_length_m_per_d
+    #              X
+    # c_transport_flat_J_per_kg_m
+    #
+    # => constant for each species and given max path length => needs to be made per species and per maturity level for prototype
+    
+
+
     # # Male-specific derived values
     # p_Am_male_J_per_d_cm2: float
     # E_m_male_J_per_cm3: float
