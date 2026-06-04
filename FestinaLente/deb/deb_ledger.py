@@ -9,12 +9,11 @@ import numpy as np
 
 if TYPE_CHECKING:
         
-    from FestinaLente.core.fluxes.agent_flux import AgentFluxes
     from FestinaLente.deb.deb_agent import SheepAgent
     from FestinaLente.deb.deb_state import SheepAgentState
     from FestinaLente.empirical_data.sheep import SheepTaxon    
     
-from FestinaLente.deb.deb_rules import brockway_boyne_c_transport
+    from FestinaLente.deb.deb_rules import MaintenanceRapport
 
 
 
@@ -79,9 +78,86 @@ class LedgerFormatMixin:
 
 
 
+#########################
 
 
 
+
+@dataclass(frozen=True)
+class FluxesLedger:
+    """
+    Tick-level energy fluxes.
+
+    Convention:
+    - fields ending in _per_d are powers/rates.
+    - fields ending in _J are amounts over the current tick.
+    """
+
+    dt_d: float
+
+    L_cm: float
+    # cm.
+    # Formula: L = max(V, V_min)^(1/3)
+
+    body_mass_kg: float
+    # kg.
+    # Approx wet mass used for movement.
+
+    p_C_J_per_d: float
+    # J / day.
+    # Formula: p_C = E * v / L
+
+    mobilized_J: float
+    # J.
+    # Formula: M = min(E, p_C * dt)
+
+    soma_budget_J: float
+    # J.
+    # Formula: B_S = kappa * mobilized_J
+
+    maturity_repro_budget_J: float
+    # J.
+    # Formula: B_H = (1 - kappa) * mobilized_J
+
+    assimilation_J: float
+    # J.
+    # Formula scaffold: A = kap_X * harvested_food_energy_J
+
+
+
+
+def compute_fluxes(
+    state: "SheepAgentState",
+    taxon: SheepTaxon,
+    assimilation_J: float,
+    dt_d: float,
+) -> FluxesLedger:
+    V_safe = max(state.V_cm3, taxon.V_min_cm3)
+    L_cm = V_safe ** (1.0 / 3.0)
+
+    body_mass_kg = max(
+        V_safe / 1000.0,
+        taxon.min_body_mass_kg,
+    )
+
+    p_C = max(state.E_J * taxon.v_cm_per_d / L_cm, 0.0)
+    mobilized_J = min(state.E_J, p_C * dt_d)
+    soma_budget_J = taxon.kappa * mobilized_J
+    maturity_repro_budget_J = (1.0 - taxon.kappa) * mobilized_J
+
+    return FluxesLedger(
+        dt_d=dt_d,
+        L_cm=L_cm,
+        body_mass_kg=body_mass_kg,
+        p_C_J_per_d=p_C,
+        mobilized_J=mobilized_J,
+        soma_budget_J=soma_budget_J,
+        maturity_repro_budget_J=maturity_repro_budget_J,
+        assimilation_J=assimilation_J,
+    )
+
+
+#####################################################
 
 
 
@@ -92,75 +168,9 @@ class LedgerFormatMixin:
 
 
 ################################################################
-@dataclass(frozen=True)
-class MaintenanceCostsLedger:
-    """
-    Tick-level maintenance accounting.
+#           USABLE ENERGY FRACTIONS
+################################################################
 
-    Maintenance has priority over growth and maturation.
-    """
-
-    c_j: float 
-    # c_j
-
-    somatic_maintenance_due_J: float
-    # Formula: C_S = [p_M] * V * dt
-
-    somatic_maintenance_paid_J: float
-    # Formula: min(B_S, C_S)
-
-    somatic_deficit_J: float
-    # Formula: max(C_S - B_S, 0)
-
-    soma_surplus_after_maintenance_J: float
-    # Formula: max(B_S - C_S, 0)
-    
-
-
-    maturity_maintenance_due_J: float
-    # Formula: C_J = k_J * E_H * dt
-
-    maturity_maintenance_paid_J: float
-    # Formula: min(B_H, C_J)
-
-    maturity_deficit_J: float
-    # Formula: max(C_J - B_H, 0)
-
-    maturity_surplus_after_maintenance_J: float
-    # Formula: max(B_H - C_J, 0)
-
-def compute_maintenance(
-            taxon : 'SheepTaxon', 
-            state : 'SheepAgentState' ,
-            fluxes : 'AgentFluxes', 
-            dt: float = 1.0 
-            ) -> MaintenanceCostsLedger:
-        """ compute maintenance costs and deficits for the current tick, given the agent state, taxon parameters, and available fluxes for the tick.        
-            somatic maintenance => cost of maintaining existing structure 
-                depends on how much structure there is (V) and how costly it is to maintain per unit of structure (p_M)
-            maturity maintenance => cost of maintaining maturity level 
-                depends on how much maturity there is (E_H) and how costly it is to maintain per unit of maturity (k_J)
-            """
-        
-        somatic_maintenance: float = taxon.p_M_J_per_d_cm3 * state.V_cm3 * dt
-        c_j: float = taxon.k_J_per_d * state.E_H_J *dt
-
-        return MaintenanceCostsLedger(
-            c_j=c_j,
-
-            somatic_maintenance_due_J=somatic_maintenance,
-            somatic_maintenance_paid_J=min(somatic_maintenance, fluxes.soma_budget_J),
-            somatic_deficit_J=max(somatic_maintenance-fluxes.soma_budget_J, 0),
-            soma_surplus_after_maintenance_J=max(fluxes.soma_budget_J - somatic_maintenance, 0),
-
-            maturity_maintenance_due_J= c_j,
-            maturity_maintenance_paid_J=min(c_j, fluxes.maturity_repro_budget_J),
-            maturity_deficit_J=max(c_j-fluxes.maturity_repro_budget_J, 0),
-            maturity_surplus_after_maintenance_J=max(fluxes.maturity_repro_budget_J-c_j, 0)
-
-
-
-        )
 
 @dataclass
 class EnergyLedger:
@@ -171,7 +181,10 @@ class EnergyLedger:
 
     # isolate maintenance logic while creating the energy ledger instance?
 
-def compute_energy_ledger(maintenanceR: MaintenanceCostsLedger) -> EnergyLedger:
+
+
+
+def compute_energy_ledger(maintenanceR: "MaintenanceRapport") -> EnergyLedger:
     return EnergyLedger(
         mobilized_J=maintenanceR.c_j,
         soma_after_maintenance_J=maintenanceR.soma_surplus_after_maintenance_J,
@@ -179,8 +192,9 @@ def compute_energy_ledger(maintenanceR: MaintenanceCostsLedger) -> EnergyLedger:
     )
 
 ###############################################
-
-def _max_movement_range_j(agent : SheepAgent) -> float: 
+#                MOVEMENT
+###############################################
+def _max_movement_range_j(agent : "SheepAgent") -> float: 
     """
     compute max movement range to J (without terrain correction)
     s_t = D_{max}(c_transport * mass * tau)
@@ -189,6 +203,9 @@ def _max_movement_range_j(agent : SheepAgent) -> float:
     body_mass_gram: float = agent.state.body_mass_kg * 1000 
     d_max : float = agent.taxon.baseline_daily_path_length_m
     return c_transport * body_mass_gram * d_max
+
+
+
 
 
 @dataclass(frozen=True)
@@ -238,74 +255,46 @@ def compute_movement_ledger(agent:'SheepAgent', day_len: int, energy_ledger:Ener
     )
 
 
-def execute_movement(agent:'SheepAgent', movement_ledger:MovementLedger, terrain_factor : float = 1.0):
-
-    # evaluate what range to use using correction Ratio, 
-    if movement_ledger.correction_ratio < 1:
-        print("deficient interaction phase")
-
-
-    # draw movement distance and correct for terrain factor
-    rng: np.random.Generator = agent.rng
-    rng.
-
-    
-    # need to use basic geomitry to check for non linear vs linear movement 
 
 
 
 
-
-    return 
-
-
-
-
-
+################################################################
+#                  CONTAINER OBJECT
+################################################################
 
 
 
 @dataclass
 class AgentDayLedger:
-    """ 
-    Created by DAY_OPEN tick, 
-    updated during interaction ticks, 
-    and used in DAY_CLOSE tick to apply growth, maturity, reproduction, and death.
+    """
+    1. What did this agent have available today?
+    2. What was paid to mandatory maintenance?
+    3. What remained available for movement / growth / maturity / reproduction?
+    4. What happened during interaction ticks?
+    5. What state changes should be applied at day close?
     """
     agent_id: int
     biological_day: int
 
-    
+    fluxes: "FluxesLedger"
+    maintenance: "MaintenanceRapport"
+    energy: EnergyLedger
+    movement: MovementLedger
 
     interaction_ticks_total: int
-    interaction_ticks_completed: int
+    interaction_ticks_completed: int = 0
 
-
-    max_movement_range_j : float
-
-
-    movement_budget_per_tick_J: float
-    #movement_budget_per_tick_m: float
     movement_spent_J: float = 0.0
     movement_spent_m: float = 0.0
-
     distance_traveled_m: float = 0.0
-    distance_traveled_fields: float = 0.0
-
     harvested_DM_kg: float = 0.0
     assimilated_J: float = 0.0
 
-    # need movement ledger obj
-
     def print_summary(self) -> None:
-        print(f"Agent {self.agent_id} - Day {self.biological_day}")
-        print(f"  Mobilized energy: {self.mobilized_J:.1f} J")
-        print(f"  Soma after maintenance: {self.soma_after_maintenance_J:.1f} J")
-        print(f"  Maturity after maintenance: {self.maturity_after_maintenance_J:.1f} J")
-        print(f"  Movement spent: {self.movement_spent_J:.1f} J, {self.movement_spent_m:.2f} m")
-        print(f"  Distance traveled: {self.distance_traveled_m:.2f} m")
-        print(f"  Harvested DM: {self.harvested_DM_kg:.4f} kg, Assimilated energy: {self.assimilated_J:.1f} J")
-
+        print(f"  Mobilized energy: {self.energy.mobilized_J:.1f} J")
+        print(f"  Soma after maintenance: {self.energy.soma_after_maintenance_J:.1f} J")
+        print(f"  Maturity after maintenance: {self.energy.maturity_after_maintenance_J:.1f} J")
 
 
 
@@ -314,39 +303,31 @@ class AgentDayLedger:
 def create_day_ledger(
     agent_id: int,
     biological_day: int,
-    fluxes: "AgentFluxes",
     agent: "SheepAgent",
-    n_interaction_ticks: int = 4,  # assuming 4 ticks per day for simplicity
+    fluxes: "FluxesLedger",
+    maintenance: "MaintenanceRapport",
+    n_interaction_ticks: int,
 ) -> AgentDayLedger:
-    """ create day ledger for an agent at the start of the day, with initial values based on fluxes and agent state """
+    energy = compute_energy_ledger(
+        fluxes=fluxes,
+        maintenance=maintenance,
+    )
 
-    kappa: float = agent.taxon.kappa
-
-    somatic_maintenance: float = kappa * fluxes.mobilized_J
-    c_j: float = (1 - kappa) * fluxes.mobilized_J
-
-    
-
-
-
-    # need availability/max_distance_cost for correction. 
-    # can be used with probability's to mimic exhaustion
+    movement = compute_movement_ledger(
+        agent=agent,
+        day_len=n_interaction_ticks,
+        energy_ledger=energy,
+    )
 
     return AgentDayLedger(
         agent_id=agent_id,
         biological_day=biological_day,
-
-        mobilized_J=fluxes.mobilized_J,
-        soma_after_maintenance_J=max(fluxes.soma_budget_J - somatic_maintenance, 0),
-        maturity_after_maintenance_J=max(fluxes.maturity_repro_budget_J - c_j, 0),
-        interaction_ticks_total=0,
-        interaction_ticks_completed=0,
-        #
-        movement_budget_per_tick_J=movement_budget_per_tick_J,  
-        #
-        movement_budget_per_tick_m=movement_budget_per_tick_M
+        fluxes=fluxes,
+        maintenance=maintenance,
+        energy=energy,
+        movement=movement,
+        interaction_ticks_total=n_interaction_ticks,
     )
-
 
 
 #########################################################################

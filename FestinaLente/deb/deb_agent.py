@@ -7,14 +7,20 @@ on engine level clock obj keeping track of tick calls
 
 import numpy as np
 
-from FestinaLente.deb.deb_rules import MaintenanceCostsLedger, compute_maintenance, compute_movement_interaction
+from FestinaLente.deb.deb_flux import compute_fluxes
+from FestinaLente.deb.deb_ledger import EnergyLedger, create_day_ledger
+from FestinaLente.deb.deb_rules import compute_movement_interaction, compute_maintenance, MaintenanceRapport
 from FestinaLente.deb.deb_state import AgentDerived, SheepAgentState, agent_state_init, derive_sheep_taxon
+
 from FestinaLente.empirical_data.sheep import SheepTaxon
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from FestinaLente.deb.deb_ledger import AgentDayLedger
     from FestinaLente.deb.deb_flux import FluxesLedger
+    from FestinaLente.deb.deb_test.deb_sim_params_test import SimSetupTest
+
+
 
 
 class AnimalSpecies:
@@ -24,12 +30,18 @@ class AnimalSpecies:
     keeps track of per species count 
     '''
 
-    def __init__(self, taxon: str) -> None:
+    def __init__(
+            self,
+            taxon: str,
+            day_length : float = 4.0
+            
+            ) -> None:
         print(f"Initializing species with taxon: {taxon}")
         self.taxon: SheepTaxon = SheepTaxon()  # for now, we only have one taxon, so we can ignore the input taxon string and just use the sheep taxon. In the future, we can expand this to support multiple taxa.
         self.derived: AgentDerived = derive_sheep_taxon(self.taxon)
         self.count: int = 0
         self.instance_dict: dict[int, 'SheepAgent'] = {}
+        self.length_of_day: float = day_length
 
 
     def add_agent_instance(self, agent: 'SheepAgent') -> None:
@@ -39,18 +51,25 @@ class AnimalSpecies:
 
     def create_agent(self, agent_id: int) -> 'SheepAgent':
         self.count += 1
-        return SheepAgent(agent_id=agent_id, species_obj=self)
+        return SheepAgent(
+            agent_id=agent_id, 
+            species_obj=self,
+            filling_ratio=1.0,
+            position=(0.0, 0.0),
+            length_of_day=self.length_of_day
+        )
     
-    def compute_max_movement_cost(self):
-        """
-        D_{max,t}=S_t/(c_{transport}M_t\tau)
-        """
-        
+
+    
 
     def create_agent_series(self, num_agents: int) -> int:
+        """
+        NOTE:
+        - testing function
+        """
 
         for _ in range(num_agents):
-            agent_id = self.count + 1  # generate a new agent ID
+            agent_id: int = self.count + 1  # generate a new agent ID
             print("")
             print(f"Creating agent with ID: {agent_id}")
             print("")
@@ -79,7 +98,8 @@ class AnimalSpecies:
             print("\n")
 
 
-
+#####################################################
+#               
 
 class SheepAgent():
     '''
@@ -87,8 +107,16 @@ class SheepAgent():
     rng logic can be implemented here to keep it isolated on the agent level.
     '''
 
-    def __init__(self, agent_id: int, species_obj : AnimalSpecies) -> None:
+    def __init__(
+            self, 
+            agent_id: int, 
+            species_obj : AnimalSpecies, 
+            filling_ratio: float = 1.0, 
+            position : tuple = (0.0, 0.0), 
+            length_of_day: float = 4.0
+            ) -> None:
 
+        self.length_of_day: float = length_of_day
 
         self.agent_id: int = agent_id
         self.species_obj: AnimalSpecies = species_obj
@@ -96,16 +124,15 @@ class SheepAgent():
         # temp
         self.sequence : np.random.SeedSequence = np.random.SeedSequence(entropy=agent_id)  # for now, we can use the agent ID as the seed for the random number generator. This will ensure that each agent has a unique and deterministic RNG sequence based on its ID. In the future, we can expand this to support more complex seeding strategies if needed.
         self.rng : np.random.Generator = np.random.default_rng(self.sequence)
-        self.position: tuple[float, float] = (0.0, 0.0)
+        self.position: tuple[float, float] = position
 
 
         self.state: SheepAgentState  = agent_state_init(
             agent_id=agent_id,
             species_obj=self.species_obj,
-            filling_ratio=1.0
+            filling_ratio=filling_ratio
         )
 
-        ## rng placeholder
         
 
         self.derived: AgentDerived = species_obj.derived
@@ -125,25 +152,29 @@ class SheepAgent():
         print("Position: ")
         print(self.position)
 
-    def fetch_fluxes_ledger(self, assimilation_J: float = 0, dt_d: float = 4.0) -> None:
+    def fetch_fluxes_ledger(
+            self, 
+            assimilation_J: float = 0
+            ) -> None:
         ''' compute fluxes and store in day_fluxes attribute 
         attributes: 
         - assimilation_J: energy assimilated during the day, in Joules. This is an input to the flux computation, and can be set based on the agent's foraging behavior and the environment. For now, we can set it to 0 and focus on the mobilization and budget split fluxes.
         - dt_d: time step for the flux computation, in days. This can be set to 1 for daily fluxes, or a fraction of a day for sub-daily fluxes. For now, we can set it to 4.0 to represent 4 days, which will allow us to see more significant changes in the fluxes and make it easier to debug and understand the model dynamics.
         '''
-        from FestinaLente.deb.deb_flux import compute_fluxes
+        
+        
         self.day_fluxes: "FluxesLedger" = compute_fluxes(
             state=self.state,
             taxon=self.taxon,
             assimilation_J=assimilation_J,
-            dt_d=dt_d
+            dt_d=self.length_of_day
         )
 
     def fetch_new_ledger(self, biological_day: int) -> None:
         if not hasattr(self, "day_fluxes"):
             raise ValueError("Fluxes must be computed before fetching ledger.")
         
-        from FestinaLente.deb.deb_ledger import create_day_ledger
+        
         self.day_ledger: "AgentDayLedger" = create_day_ledger(
             agent_id=self.agent_id,
             biological_day=biological_day,
@@ -153,18 +184,26 @@ class SheepAgent():
     
     # 1. start of day tick: fetch fluxes and create day ledger, perform maintenance and update day ledger accordingly
 
-    def perform_maintenance(self) -> MaintenanceCostsLedger:
+    def agent_mass_kg(self) -> float:
+        return self.state.body_mass_kg
+
+    def perform_maintenance(self) -> MaintenanceRapport:
         if not hasattr(self, "day_ledger"):
             raise ValueError("Day ledger must be created before performing maintenance.")
         
-        maintenance_ledger: MaintenanceCostsLedger = compute_maintenance(
+        maintenance_rapport: MaintenanceRapport = compute_maintenance(
             state=self.state,
             taxon=self.taxon,
             fluxes=self.day_fluxes
         )
-        self.day_ledger.soma_after_maintenance_J = max(self.day_fluxes.soma_budget_J - maintenance_ledger.somatic_maintenance_due_J, 0)
-        self.day_ledger.maturity_after_maintenance_J = max(self.day_fluxes.maturity_repro_budget_J - maintenance_ledger.maturity_maintenance_due_J, 0)
-        return maintenance_ledger
+        self.energy_ledger : EnergyLedger = EnergyLedger(
+            mobilized_J=maintenance_rapport.c_j,
+            soma_after_maintenance_J= max(self.day_fluxes.soma_budget_J - maintenance_rapport.somatic_maintenance_due_J, 0),
+            maturity_after_maintenance_J=max(self.day_fluxes.maturity_repro_budget_J - maintenance_rapport.maturity_maintenance_due_J, 0),
+
+        )
+
+        return maintenance_rapport
 
         # # apply maintenance costs to the day ledger
         # self.day_ledger.soma_after_maintenance_J = max(self.day_fluxes.soma_budget_J - self.day_fluxes.p_C_J_per_d, 0)
@@ -172,19 +211,34 @@ class SheepAgent():
         # ## temp 
 
 
-    def start_of_day_tick(self, biological_day: int, assimilation_J: float = 0, dt_d: float = 4.0) -> None:
-        """
-        instance attributes are being updated in place downstream
-        - fetch fluxes and create day ledger
-        - perform maintenance and update day ledger accordingly
+    def start_of_day_tick(
+            self,
+            biological_day: int,
+            assimilation_J: float = 0.0,
+            
+) -> None:
+        self.day_fluxes = compute_fluxes(
+            state=self.state,
+            taxon=self.taxon,
+            assimilation_J=assimilation_J,
+            dt_d=self.length_of_day,
+        )
 
-        """
+        maintenance: MaintenanceRapport = compute_maintenance(
+            state=self.state,
+            taxon=self.taxon,
+            fluxes=self.day_fluxes,
+            dt=self.length_of_day,
+        )
 
-        self.fetch_fluxes_ledger(assimilation_J=assimilation_J, dt_d=dt_d)
-        self.fetch_new_ledger(biological_day=biological_day)
-        self.perform_maintenance()
-
-        # needs to create interaction ledger ready for the day!. 
+        self.day_ledger = create_day_ledger(
+            agent_id=self.agent_id,
+            biological_day=biological_day,
+            agent=self,
+            fluxes=self.day_fluxes,
+            maintenance=maintenance,
+            n_interaction_ticks=self.length_of_day,
+        )
 
 
     # 2. interaction tick: perform movement, harvest and interactions, update day ledger accordingly
@@ -258,6 +312,21 @@ def testing_interaction_loop(agent_count: int = 1,
     agent_1.day_ledger.print_summary()
 """
 
+def test_run_factory(
+        setup: "SimSetupTest"
+) -> AnimalSpecies:
+    
+    species_obj = AnimalSpecies("sheep")
+
+    
+    for _ in setup.agent_count:
+        species_obj.add_agent_instance()
+
+    return species_obj
+    
+
+
+
 if __name__ == "__main__":
 
-    testing_interaction_loop(agent_count=1, n_sim_days=1, n_dt_day=4)
+    species_obj: AnimalSpecies = test_run_factory()

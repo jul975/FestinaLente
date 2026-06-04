@@ -8,6 +8,8 @@ from dataclasses import dataclass
 
 from typing import TYPE_CHECKING
 
+import numpy as np
+
 if TYPE_CHECKING:
     from FestinaLente.deb.deb_agent import SheepAgent
     from FestinaLente.deb.deb_state import SheepAgentState
@@ -31,6 +33,81 @@ v / L = reserve turnover/conductance rate, 1/day
 
 '''
 
+
+
+##############################################################################
+##############################################################################
+
+
+@dataclass(frozen=True)
+class MaintenanceRapport:
+    """
+    Tick-level maintenance accounting.
+
+    Maintenance has priority over growth and maturation.
+    """
+
+    c_j: float 
+    # c_j
+
+    somatic_maintenance_due_J: float
+    # Formula: C_S = [p_M] * V * dt
+
+    somatic_maintenance_paid_J: float
+    # Formula: min(B_S, C_S)
+
+    somatic_deficit_J: float
+    # Formula: max(C_S - B_S, 0)
+
+    soma_surplus_after_maintenance_J: float
+    # Formula: max(B_S - C_S, 0)
+    
+
+
+    maturity_maintenance_due_J: float
+    # Formula: C_J = k_J * E_H * dt
+
+    maturity_maintenance_paid_J: float
+    # Formula: min(B_H, C_J)
+
+    maturity_deficit_J: float
+    # Formula: max(C_J - B_H, 0)
+
+    maturity_surplus_after_maintenance_J: float
+    # Formula: max(B_H - C_J, 0)
+
+def compute_maintenance(
+            taxon : 'SheepTaxon', 
+            state : 'SheepAgentState' ,
+            fluxes : 'AgentFluxes', 
+            dt: float = 1.0 
+            ) -> MaintenanceRapport:
+        """ compute maintenance costs and deficits for the current tick, given the agent state, taxon parameters, and available fluxes for the tick.        
+            somatic maintenance => cost of maintaining existing structure 
+                depends on how much structure there is (V) and how costly it is to maintain per unit of structure (p_M)
+            maturity maintenance => cost of maintaining maturity level 
+                depends on how much maturity there is (E_H) and how costly it is to maintain per unit of maturity (k_J)
+            """
+        
+        somatic_maintenance: float = taxon.p_M_J_per_d_cm3 * state.V_cm3 * dt
+        c_j: float = taxon.k_J_per_d * state.E_H_J *dt
+
+        return MaintenanceRapport(
+            c_j=c_j,
+
+            somatic_maintenance_due_J=somatic_maintenance,
+            somatic_maintenance_paid_J=min(somatic_maintenance, fluxes.soma_budget_J),
+            somatic_deficit_J=max(somatic_maintenance-fluxes.soma_budget_J, 0),
+            soma_surplus_after_maintenance_J=max(fluxes.soma_budget_J - somatic_maintenance, 0),
+
+            maturity_maintenance_due_J= c_j,
+            maturity_maintenance_paid_J=min(c_j, fluxes.maturity_repro_budget_J),
+            maturity_deficit_J=max(c_j-fluxes.maturity_repro_budget_J, 0),
+            maturity_surplus_after_maintenance_J=max(fluxes.maturity_repro_budget_J-c_j, 0)
+
+
+
+        )
 
 
 
@@ -65,7 +142,7 @@ def brockway_boyne_c_transport(
 
 
 
-
+"""
 ##############################################################################
 
 
@@ -101,7 +178,7 @@ def brockway_boyne_c_transport(
 #     births: int
 #     deaths: int
 
-
+"""
 
 
 ##############################################################################
@@ -183,3 +260,26 @@ def agent_movement_interaction(
 
 
 ##############################################################################
+# Movement 
+##############################################################################
+
+
+def execute_movement(agent:'SheepAgent', movement_ledger:MovementLedger, terrain_factor : float = 1.0):
+
+    # evaluate what range to use using correction Ratio, 
+    if movement_ledger.correction_ratio < 1:
+        print("deficient interaction phase")
+
+
+    # # draw movement distance and correct for terrain factor
+    # rng: np.random.Generator = agent.rng
+    # rng.
+
+    
+    # need to use basic geomitry to check for non linear vs linear movement 
+
+
+
+
+
+    return 

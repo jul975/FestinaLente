@@ -2,7 +2,7 @@
 
 from FestinaLente.deb.deb_test.Test_agent_snap import AgentSnapshotT
 from FestinaLente.deb.domains.deb_agent.phases.growth import compute_growth
-from FestinaLente.deb.domains.deb_agent.phases.maintenance import MaintenanceCostsLedger
+from FestinaLente.deb.domains.deb_agent.phases.maintenance import MaintenanceRapport
 from FestinaLente.deb.deb_flux import SheepFluxes
 from FestinaLente.deb.domains.deb_agent.state import SheepAgentState, agent_state_init
 from FestinaLente.empirical_data.sheep import SheepTaxon
@@ -220,7 +220,7 @@ class AgentTest:
     def early_day_tick(self) -> None:
         """ compute fluxes and maintenance costs for the day, before interactions. """
         
-        self.maintenance_costs: MaintenanceCostsLedger = compute_maintenance(
+        self.maintenance_costs: MaintenanceRapport = compute_maintenance(
             taxon=self.agent_taxon,
             state=self.state,
             fluxes=self.day_fluxes,
